@@ -5,12 +5,12 @@
 "use strict";
 const Flow = require('../Flow');
 const pipe = require('./pipe');
-const streamMap = require('./streamMap');
+const streamMap = require('./flatMap');
 const map = require('./map');
 const Stream = require('../Stream');
 
 function combine(fn, ...streams) {
-  return !!streams ? new CombineFlow() : (f) => combine(fn, ...f);
+  return !!streams ? new CombineFlow(fn) : (...f) => combine(fn, f);
 }
 
 function withIndex(stream, i) {
