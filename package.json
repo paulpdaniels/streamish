@@ -1,0 +1,21 @@
+{
+  "name": "streamish",
+  "version": "0.0.1",
+  "description": "A simple FRP library",
+  "main": "index.js",
+  "repository": "https://github.com/paulpdaniels/streamish",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Paul Daniels",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^20.0.4"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  }
+}
