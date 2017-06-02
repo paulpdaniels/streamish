@@ -2,6 +2,7 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+'use strict';
 
 function _pipe(head, tail) {
   return f => tail.length > 0 ?

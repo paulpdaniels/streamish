@@ -3,6 +3,7 @@
  *  @author Paul Daniels
  */
 'use strict';
+
 const pipe = require('../src/stream/operators/pipe');
 const Stream = require('../src/stream/Stream');
 const filter = require('../src/stream/operators/filter');
@@ -29,7 +30,7 @@ test('Can pipe operators together', () => {
     map(x => x - 1),
     filter(x => x % 2 === 0),
     map(x => x * x),
-    subscribe(v => array.push(v)),
+    subscribe(v => array.push(v))
   )(stream);
 
   expect(array).toEqual([0, 4]);

@@ -2,7 +2,7 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
-
+'use strict';
 const Sink = require('../Sink');
 
 function noop() {

@@ -13,7 +13,7 @@ test('should compose functions in reverse order', () => {
   expect(compose(
     adder("something."),
     adder("writing "),
-    adder("am "),
+    adder("am ")
   )("I ")).toBe("I am writing something.");
 
 });

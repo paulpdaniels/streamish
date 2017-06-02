@@ -2,6 +2,7 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+'use strict';
 const Flow = require('../Flow');
 const Stream = require('../Stream');
 const streamMap = require('./streamMap');

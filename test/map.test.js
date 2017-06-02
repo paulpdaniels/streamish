@@ -2,6 +2,8 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+'use strict';
+
 const Stream = require('../src/stream/Stream');
 const subscribe = require('../src/stream/operators/subscribe');
 const map = require('../src/stream/operators/map');

@@ -2,6 +2,7 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+'use strict';
 class Sink {
   constructor(next, error, complete, context) {
     this._next = next;

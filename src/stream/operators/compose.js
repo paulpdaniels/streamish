@@ -2,6 +2,7 @@
  *  Created - 5/31/2017
  *  @author Paul Daniels
  */
+'use strict';
 
 const _pipe = require('./internal/_pipe');
 

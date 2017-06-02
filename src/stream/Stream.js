@@ -1,4 +1,5 @@
 
+'use strict';
 const Flow = require('./Flow');
 const Sink = require('./Sink');
 

@@ -2,6 +2,7 @@
  *  Created - 5/31/2017
  *  @author Paul Daniels
  */
+'use strict';
 const Flow = require('../Flow');
 
 function streamMap(fn, flow) {

@@ -2,6 +2,8 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+'use strict';
+
 class Flow {
   constructor(stream) {
     this.stream = stream;
