@@ -1,6 +1,11 @@
 # streamish
 A simple Functional Reactive Streaming library
 
+
+[![CircleCI](https://img.shields.io/circleci/project/github/RedSparr0w/node-csgo-parser.svg?style=flat-square)](https://github.com/paulpdaniels/streamish)
+
+[![Codecov](https://img.shields.io/codecov/c/github/codecov/example-python.svg?style=flat-square)](https://github.com/paulpdaniels/streamish)
+
 ## Warning! Work in progress!
 
 This is currently a work in progress and more what I would consider to be an "experiment" than anything else. If you want a production ready system I would suggest checking out RxJS, XStreams, Most.js or Bacon.
