@@ -44,7 +44,9 @@ class TimeShiftSink {
     this.observer.error(e);
   }
   complete() {
-    this.observer.complete();
+    this.scheduler.schedule(this.observer, this.delayTime)(
+      (state) => state.complete()
+    )
   }
 }
 
