@@ -5,7 +5,7 @@
 'use strict';
 const Flow = require('../Flow');
 const Stream = require('../Stream');
-const streamMap = require('./streamMap');
+const flatMap = require('./flatMap');
 const map = require('./map');
 const filter = require('./filter');
 const pipe = require('./pipe');
@@ -39,7 +39,7 @@ class ZipFlow extends Flow {
   _subscribe(observer) {
     const values = [];
     const _flow = pipe(
-      streamMap(withIndex),
+      flatMap(withIndex),
       map(([i, value]) => {
         let updated = false;
         for (let j = 0; j < values.length; ++j) {

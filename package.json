@@ -15,6 +15,9 @@
   "devDependencies": {
     "jest": "^20.0.4"
   },
+  "jest": {
+    "collectCoverage": true
+  },
   "engines": {
     "node": ">=6.0.0"
   }

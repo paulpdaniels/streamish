@@ -5,7 +5,7 @@
 'use strict';
 const Stream = require('../src/stream/Stream');
 const subscribe = require('../src/stream/operators/subscribe');
-const streamMap = require('../src/stream/operators/streamMap');
+const streamMap = require('../src/stream/operators/flatMap');
 
 test('Can flatMap a stream', () => {
 

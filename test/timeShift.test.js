@@ -4,13 +4,11 @@
  */
 'use strict';
 const Stream = require('../src/stream/Stream');
-const TestScheduler = require('../src/stream/schedulers/testScheduler');
 const subscribe = require('../src/stream/operators/subscribe');
 const timeShift = require('../src/stream/operators/delay');
+const sandbox = require('./helpers/sandbox');
 
-test('should delay emission of events', () => {
-
-  const scheduler = new TestScheduler();
+test('should delay emission of events', sandbox(scheduler => () => {
 
   const actual = [];
   subscribe(v => actual.push(v))(
@@ -22,4 +20,4 @@ test('should delay emission of events', () => {
   scheduler.advanceTo(10);
 
   expect(actual).toEqual([1, 2, 3]);
-});
+}));

@@ -17,11 +17,11 @@ class FilterFlow extends Flow {
   }
 
   _subscribe(observer) {
-    return this.flow.subscribe(this.sink(observer));
+    return this.flow.subscribe(FilterFlow.sink(this.fn, observer));
   }
 
-  sink(observer) {
-    return new FilterSink(this.fn, observer);
+  static sink(fn, observer) {
+    return new FilterSink(fn, observer);
   }
 }
 

@@ -23,5 +23,3 @@ test('Can construct a stream from a Promise', (done) => {
     done();
   })(Stream(promise));
 });
-
-test('')
