@@ -5,6 +5,6 @@
 "use strict";
 import take from './take';
 
-function head() {
+export default function head() {
   return take(1);
 }
