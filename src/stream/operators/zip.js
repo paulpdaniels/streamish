@@ -3,14 +3,15 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Flow = require('../Flow');
-const Stream = require('../Stream');
-const flatMap = require('./flatMap');
-const map = require('./map');
-const filter = require('./filter');
-const pipe = require('./pipe');
+import { Flow } from '../Flow';
+import { Stream }  from '../Stream';
+import flatMap from './flatMap';
+import map from './map';
+import filter from './filter';
+import pipe from './pipe';
+import _fill from "./internal/_fill";
 
-function zip(fn) {
+export default function zip(fn) {
   return (...streams) => new ZipFlow(fn, streams);
 }
 
@@ -38,24 +39,32 @@ class ZipFlow extends Flow {
 
   _subscribe(observer) {
     const values = [];
+    const len = this.streams.length;
+    const hasValues = new Array(len);
+    _fill(hasValues, len, -1);
     const _flow = pipe(
       flatMap(withIndex),
       map(([i, value]) => {
-        let updated = false;
-        for (let j = 0; j < values.length; ++j) {
-          if (typeof values[j][i] === 'undefined') {
-            values[j][i] = value;
-            updated = true;
-            break;
-          }
+
+        // Update the index that will be updated
+        const cur = (hasValues[i] += 1);
+
+        // We are in uncharted territory
+        if (cur >= values.length) {
+          values.push(new Array(len));
         }
 
-        if (!updated)
-          values.push([]) && (values[values.length - 1][i] = value);
+        // The set the current value
+        values[cur][i] = value;
 
-        return isFull(this.streams.length, values[0]) ?
-          values.shift() :
-          unit;
+        if (!hasValues.some(v => v < 0)) {
+          const out = values.shift();
+          // We have one less value for each hasValue
+          for (let i = 0; i < len; ++i) { hasValues[i] -= 1; }
+          return out;
+        } else {
+          return unit;
+        }
       }),
       filter(x => x !== unit)
     )(Stream(this.streams));

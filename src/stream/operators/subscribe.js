@@ -3,12 +3,11 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Sink = require('../Sink');
+import { Sink } from '../Sink';
 
-function noop() {
-}
+function noop() {}
 
-function subscribe(next, error, complete) {
+export default function subscribe(next, error, complete) {
   return flow => flow.subscribe(_conform(next, error, complete))
 }
 
@@ -22,5 +21,3 @@ function _conform(observerOrNext, error, complete) {
 
   return new Sink(_next, _error, _complete, context);
 }
-
-module.exports = subscribe;

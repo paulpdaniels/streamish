@@ -4,9 +4,9 @@
  */
 'use strict';
 
-const Stream = require('../src/stream/Stream');
-const subscribe = require('../src/stream/operators/subscribe');
-const map = require('../src/stream/operators/map');
+import { Stream } from '../src/stream/Stream';
+import subscribe from '../src/stream/operators/subscribe';
+import map from '../src/stream/operators/map';
 
 test('Can map a stream', () => {
 

@@ -3,9 +3,9 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Flow = require('../Flow');
+import { Flow } from '../Flow';
 
-function timeShift(delayTime, scheduler) {
+export default function timeShift(delayTime, scheduler) {
   return f => new TimeShiftFlow(delayTime, scheduler, f);
 }
 

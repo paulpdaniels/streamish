@@ -3,10 +3,10 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Flow = require('../Flow');
+import { Flow } from '../Flow';
 
-function filter(fn, flow) {
-  return !!flow ? new FilterFlow(fn, flow) : (f) => filter(fn, f);
+export default function filter(fn) {
+  return flow => new FilterFlow(fn, flow);
 }
 
 class FilterFlow extends Flow {
@@ -43,5 +43,3 @@ class FilterSink {
   error(e) { this.observer.error(e); }
   complete() { this.observer.complete(); }
 }
-
-module.exports = filter;

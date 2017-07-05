@@ -4,13 +4,13 @@
  */
 'use strict';
 
-const Flow = require('./Flow');
+import { Flow } from './Flow';
 
-function interval(period, initialDelay, scheduler) {
+export function interval(period, initialDelay, scheduler) {
   return new TimerFlow(initialDelay, period, scheduler);
 }
 
-function timer(initial, period, scheduler) {
+export function timer(initial, period, scheduler) {
   return new TimerFlow(initial, period, scheduler);
 }
 
@@ -53,8 +53,3 @@ class TimerSink {
     this.observer.complete();
   }
 }
-
-module.exports = {
-  timer,
-  interval
-};

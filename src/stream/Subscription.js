@@ -2,7 +2,7 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
-class Subscription {
+export class Subscription {
   constructor(fn) {
     this.fn = fn;
     this.disposed = false;
@@ -10,10 +10,8 @@ class Subscription {
 
   unsubscribe() {
     if (!this.disposed) {
-      fn();
+      this.fn();
       this.disposed = true;
     }
   }
 }
-
-module.exports = Subscription;

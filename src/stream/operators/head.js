@@ -3,10 +3,8 @@
  *  @author Paul Daniels
  */
 "use strict";
-const take = require('./take');
+import take from './take';
 
 function head() {
   return take(1);
 }
-
-module.exports = head;

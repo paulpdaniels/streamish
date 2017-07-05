@@ -4,7 +4,7 @@
  */
 'use strict';
 
-class Flow {
+export class Flow {
   constructor(stream) {
     this.stream = stream;
   }
@@ -17,5 +17,3 @@ class Flow {
     return this.stream.subscribe(sink);
   }
 }
-
-module.exports = Flow;

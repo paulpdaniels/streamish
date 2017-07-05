@@ -3,7 +3,7 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Subscription = require('../Subscription');
+import { Subscription } from '../Subscription';
 
 function timeoutAdapter(root, scheduler) {
   const {setTimeout, clearTimeout} = root;
@@ -14,7 +14,7 @@ function timeoutAdapter(root, scheduler) {
   }
 }
 
-class AsyncScheduler {
+export class AsyncScheduler {
   constructor(root){
     this._schedule = timeoutAdapter(root, this);
   }
@@ -25,5 +25,3 @@ class AsyncScheduler {
     }
   }
 }
-
-module.exports = AsyncScheduler;

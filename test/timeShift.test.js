@@ -3,10 +3,10 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Stream = require('../src/stream/Stream');
-const subscribe = require('../src/stream/operators/subscribe');
-const timeShift = require('../src/stream/operators/delay');
-const sandbox = require('./helpers/sandbox');
+import { Stream } from '../src/stream/Stream';
+import subscribe from '../src/stream/operators/subscribe';
+import timeShift from '../src/stream/operators/delay';
+import { sandbox } from './helpers/sandbox';
 
 test('should delay emission of events', sandbox(scheduler => () => {
 

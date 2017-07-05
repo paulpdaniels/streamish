@@ -1,7 +1,7 @@
 
 'use strict';
-const Flow = require('./Flow');
-const Sink = require('./Sink');
+import { Flow } from './Flow';
+import { Sink } from './Sink';
 
 function promiseLike(promise) {
   return {
@@ -47,7 +47,7 @@ function isFunction(source) {
   return typeof source === 'function';
 }
 
-function Stream(source) {
+export function Stream(source) {
   if (isStreamLike(source)) {
     return from(source);
   } else if (isPromiseLike(source)) {
@@ -76,5 +76,3 @@ function fromIterable(iterable) {
 function fromFunction(fn) {
   return new Flow({subscribe: fn});
 }
-
-module.exports = Stream;

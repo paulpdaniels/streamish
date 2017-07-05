@@ -4,9 +4,9 @@
  */
 "use strict";
 
-const Flow = require('../Flow');
+import { Flow } from '../Flow';
 
-function take(n) {
+export default function take(n) {
   return f => new TakeFlow(n, f);
 }
 
@@ -17,7 +17,7 @@ class TakeFlow extends Flow {
   }
 
   _subscribe(observer) {
-    return super.stream.subscribe(TakeFlow.sink(this.n, observer));
+    return this.stream.subscribe(TakeFlow.sink(this.n, observer));
   }
 
   static sink(n, observer) {
@@ -33,7 +33,7 @@ class TakeSink {
 
   next(v) {
     this.n--;
-    if (this.n <= 0) {
+    if (this.n < 0) {
       this.observer.complete();
     } else {
       this.observer.next(v);
@@ -48,5 +48,3 @@ class TakeSink {
     this.observer.complete();
   }
 }
-
-module.exports = take;

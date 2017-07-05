@@ -3,10 +3,10 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Flow = require('../Flow');
+import { Flow } from '../Flow';
 
-function scan(fn, seed, flow) {
-  return !!flow ? new ScanFlow(fn, seed, flow) : flow => scan(fn, seed, flow);
+export default function scan(fn, seed) {
+  return flow => new ScanFlow(fn, seed, flow);
 }
 
 class ScanFlow extends Flow {
@@ -45,5 +45,3 @@ class ScanSink {
     this.observer.complete();
   }
 }
-
-module.exports = scan;
