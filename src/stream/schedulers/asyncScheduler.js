@@ -22,6 +22,6 @@ export class AsyncScheduler {
   schedule(state, delayTime) {
     return (action) => {
       return this._schedule(state, delayTime, action);
-    }
+    };
   }
 }

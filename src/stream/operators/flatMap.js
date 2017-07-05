@@ -6,19 +6,18 @@
 import { Flow } from '../Flow';
 
 export default function flatMap(fn, concurrency = Number.POSITIVE_INFINITY) {
-  return flow => new StreamFlow(fn, concurrency, flow);
+  return flow => new FlatMapFlow(fn, concurrency, flow);
 }
 
-class StreamFlow extends Flow {
+export class FlatMapFlow extends Flow {
   constructor(fn, concurrency, flow) {
     super(flow);
     this.fn = fn;
     this.concurrency = concurrency;
-    this.flow = flow;
   }
 
   _subscribe(sink) {
-    return this.flow.subscribe(StreamFlow.sink(this.fn, this.concurrency, sink));
+    return this.stream.subscribe(FlatMapFlow.sink(this.fn, this.concurrency, sink));
   }
 
   static sink(fn, concurrency, observer) {
