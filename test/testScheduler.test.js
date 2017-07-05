@@ -4,7 +4,7 @@
  */
 'use strict';
 
-const TestScheduler = require('../src/stream/schedulers/testScheduler');
+import { TestScheduler } from '../src/stream/schedulers/testScheduler';
 
 
 test('should be able to construct a TestScheduler', () => {

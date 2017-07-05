@@ -4,8 +4,8 @@
  */
 'use strict';
 
-const subscribe = require('../src/stream/operators/subscribe');
-const Stream = require('../src/stream/Stream');
+import subscribe from '../src/stream/operators/subscribe';
+import { Stream } from '../src/stream/Stream';
 
 test('Can construct a stream from an array', () => {
   let array = [];

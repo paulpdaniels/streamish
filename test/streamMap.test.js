@@ -3,9 +3,9 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Stream = require('../src/stream/Stream');
-const subscribe = require('../src/stream/operators/subscribe');
-const streamMap = require('../src/stream/operators/flatMap');
+import { Stream } from '../src/stream/Stream';
+import subscribe  from '../src/stream/operators/subscribe';
+import streamMap   from '../src/stream/operators/flatMap';
 
 test('Can flatMap a stream', () => {
 

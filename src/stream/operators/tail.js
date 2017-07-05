@@ -3,9 +3,9 @@
  *  @author Paul Daniels
  */
 "use strict";
-const skip = require('./skip');
+import skip from './skip';
 
-function tail() {
+export default function tail() {
   return skip(1);
 }
 

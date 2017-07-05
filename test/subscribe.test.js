@@ -3,8 +3,8 @@
  *  @author Paul Daniels
  */
 "use strict";
-const Stream = require('../src/stream/Stream');
-const subscribe = require('../src/stream/operators/subscribe');
+import { Stream } from '../src/stream/Stream';
+import subscribe from '../src/stream/operators/subscribe';
 
 
 test('should handle anonymous functions', () => {

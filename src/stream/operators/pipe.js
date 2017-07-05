@@ -3,11 +3,9 @@
  *  @author Paul Daniels
  */
 'use strict';
-const _pipe = require('./internal/_pipe');
+import _pipe from './internal/_pipe';
 
-function pipe(...operators) {
+export default function pipe(...operators) {
   const [head, ...tail] = operators;
   return _pipe(head, tail);
 }
-
-module.exports = pipe;

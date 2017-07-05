@@ -3,9 +3,9 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Stream = require('../src/stream/Stream');
-const subscribe  = require('../src/stream/operators/subscribe');
-const scan = require('../src/stream/operators/scan');
+import { Stream } from '../src/stream/Stream';
+import subscribe from '../src/stream/operators/subscribe';
+import scan from '../src/stream/operators/scan';
 
 test('Can scan a stream', () => {
 

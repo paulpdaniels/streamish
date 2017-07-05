@@ -3,7 +3,7 @@
  *  @author Paul Daniels
  */
 'use strict';
-class Sink {
+export class Sink {
   constructor(next, error, complete, context) {
     this._next = next;
     this._error = error;
@@ -24,5 +24,3 @@ class Sink {
   }
 
 }
-
-module.exports = Sink;

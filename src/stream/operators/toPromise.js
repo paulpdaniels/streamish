@@ -4,7 +4,7 @@
  */
 'use strict';
 
-function toPromise(promiseCtor = Promise, scheduler) {
+export default function toPromise(promiseCtor = Promise, scheduler) {
   return flow => promiseCtor((resolve, reject) => {
     let value;
     // We don't bother capturing the subscription because promises can't
@@ -16,5 +16,3 @@ function toPromise(promiseCtor = Promise, scheduler) {
     })
   });
 }
-
-module.exports = toPromise;

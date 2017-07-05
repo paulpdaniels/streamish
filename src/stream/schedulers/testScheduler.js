@@ -12,7 +12,7 @@ function sortByDelay([a, ia], [b, ib]) {
   return a < b ? -1 : 1;
 }
 
-class TestScheduler {
+export class TestScheduler {
   constructor() {
     this.queue = [];
     this.frame = 0;
@@ -44,5 +44,3 @@ class TestScheduler {
     }
   }
 }
-
-module.exports = TestScheduler;

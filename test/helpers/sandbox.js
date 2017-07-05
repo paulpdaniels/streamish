@@ -3,16 +3,14 @@
  *  @author Paul Daniels
  */
 'use strict';
-const TestScheduler = require('../../src/stream/schedulers/testScheduler');
+import {TestScheduler} from '../../src/stream/schedulers/testScheduler';
 
 /**
  * Simple sandbox wrapping operation that allows us to easily inject an instance of a scheduler
  * @param fn
  * @returns {*}
  */
-function sandbox(fn) {
+export function sandbox(fn) {
   const scheduler = new TestScheduler();
   return fn(scheduler);
 }
-
-module.exports = sandbox;

@@ -3,9 +3,9 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Stream = require('../src/stream/Stream');
-const subscribe = require('../src/stream/operators/subscribe');
-const filter = require('../src/stream/operators/filter');
+import { Stream } from '../src/stream/Stream';
+import subscribe from '../src/stream/operators/subscribe';
+import filter from '../src/stream/operators/filter';
 
 test('Can filter a stream', () => {
   let array = [];

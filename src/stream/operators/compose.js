@@ -4,9 +4,9 @@
  */
 'use strict';
 
-const _pipe = require('./internal/_pipe');
+import _pipe from './internal/_pipe';
 
-function compose(...operators) {
+export default function compose(...operators) {
   const [head, ...tail] = _reverse(operators);
   return _pipe(head, tail);
 }
@@ -14,5 +14,3 @@ function compose(...operators) {
 function _reverse(operators) {
   return Array.prototype.slice.call(operators, 0).reverse();
 }
-
-module.exports = compose;

@@ -3,9 +3,9 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Flow = require('../Flow');
+import { Flow } from '../Flow';
 
-function flatMap(fn, concurrency = Number.POSITIVE_INFINITY) {
+export default function flatMap(fn, concurrency = Number.POSITIVE_INFINITY) {
   return flow => new StreamFlow(fn, concurrency, flow);
 }
 
@@ -86,5 +86,3 @@ class InnerSink {
     this.parent.completeInner();
   }
 }
-
-module.exports = flatMap;

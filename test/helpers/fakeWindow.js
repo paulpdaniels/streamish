@@ -8,7 +8,7 @@
  * This is a simple class that lets us fake the window that we pass to the AsyncScheduler
  * Since the scheduler is DI constructed, we don't have any funky global state to deal with.
  */
-class FakeWindow {
+export class FakeWindow {
   constructor(scheduler) {
     this.scheduler = scheduler;
     this.pending = {};
@@ -29,5 +29,3 @@ class FakeWindow {
     }
   }
 }
-
-module.exports = FakeWindow;

@@ -3,9 +3,9 @@
  *  @author Paul Daniels
  */
 'use strict';
-const AsyncScheduler = require('../src/stream/schedulers/asyncScheduler');
-const sandbox = require('./helpers/sandbox');
-const FakeWindow = require('./helpers/fakeWindow');
+import { AsyncScheduler } from '../src/stream/schedulers/asyncScheduler';
+import { sandbox } from './helpers/sandbox';
+import { FakeWindow } from './helpers/fakeWindow';
 
 test('should schedule tasks asynchronously', sandbox(testScheduler => () => {
   // Use the test scheduler to test all the other Schedulers

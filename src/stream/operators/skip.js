@@ -4,9 +4,9 @@
  */
 "use strict";
 
-const Flow = require('../Flow');
+import { Flow } from '../Flow';
 
-function skip(n) {
+export default function skip(n) {
   return f => new SkipFlow(n, f);
 }
 
@@ -17,7 +17,7 @@ class SkipFlow extends Flow {
   }
 
   _subscribe(observer) {
-    return super.stream.subscribe(SkipFlow.sink(this.n, observer));
+    return this.stream.subscribe(SkipFlow.sink(this.n, observer));
   }
 
   static sink(n, observer) {
@@ -33,7 +33,7 @@ class SkipSink {
 
   next(v) {
     this.n--;
-    if (this.n <= 0) {
+    if (this.n < 0) {
       this.observer.next(v);
     }
   }
@@ -46,5 +46,3 @@ class SkipSink {
     this.observer.complete();
   }
 }
-
-module.exports = take;

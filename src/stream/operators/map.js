@@ -3,10 +3,10 @@
  *  @author Paul Daniels
  */
 'use strict';
-const Flow = require('../Flow');
+import { Flow } from '../Flow';
 
-function map(fn, flow) {
-  return !!flow ? new MapFlow(fn, flow) : (f) => map(fn, f);
+export default function map(fn) {
+  return flow => new MapFlow(fn, flow);
 }
 
 class MapFlow extends Flow {

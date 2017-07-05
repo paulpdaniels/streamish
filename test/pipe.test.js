@@ -4,11 +4,11 @@
  */
 'use strict';
 
-const pipe = require('../src/stream/operators/pipe');
-const Stream = require('../src/stream/Stream');
-const filter = require('../src/stream/operators/filter');
-const map = require('../src/stream/operators/map');
-const subscribe = require('../src/stream/operators/subscribe');
+import pipe from '../src/stream/operators/pipe';
+import { Stream } from '../src/stream/Stream';
+import filter from '../src/stream/operators/filter';
+import map from '../src/stream/operators/map';
+import subscribe from '../src/stream/operators/subscribe';
 
 const adder = a => b => b + a;
 
