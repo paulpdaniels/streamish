@@ -3,22 +3,22 @@
  *  @author Paul Daniels
  */
 'use strict';
-import { Flow } from '../Flow';
+import {Flow} from '../Flow';
+import {Sink} from '../Sink';
 
 export default function scan(fn, seed) {
-  return flow => new ScanFlow(fn, seed, flow);
+  return (flow, scheduler) => new ScanFlow(fn, seed, flow, scheduler);
 }
 
 class ScanFlow extends Flow {
-  constructor(fn, seed, flow) {
-    super(flow);
+  constructor(fn, seed, flow, scheduler) {
+    super(flow, scheduler);
     this.fn = fn;
     this.seed = seed;
-    this.flow = flow;
   }
 
   _subscribe(observer) {
-    return this.flow.subscribe(this.sink(observer));
+    return this.sink(observer).run(this.stream);
   }
 
   sink(observer) {
@@ -26,22 +26,29 @@ class ScanFlow extends Flow {
   }
 }
 
-class ScanSink {
+class ScanSink extends Sink {
   constructor(fn, seed, observer) {
+    super();
     this.observer = observer;
     this.seed = seed;
     this.fn = fn;
   }
 
-  next(v) {
-    const _r = this.fn(this.seed, v);
-    this.seed = _r;
-    this.observer.next(_r);
+  _next(v) {
+    try {
+      const r = this.fn(this.seed, v);
+      this.seed = r;
+      this.observer.next(r);
+    } catch (e) {
+      this.error(e);
+    }
   }
-  error(e) {
+
+  _error(e) {
     this.observer.error(e);
   }
-  complete() {
+
+  _complete() {
     this.observer.complete();
   }
 }

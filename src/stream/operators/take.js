@@ -5,19 +5,21 @@
 "use strict";
 
 import { Flow } from '../Flow';
+import { Sink } from '../Sink';
 
 export default function take(n) {
-  return f => new TakeFlow(n, f);
+  return (f, s) => new TakeFlow(n, f, s);
 }
 
 class TakeFlow extends Flow {
-  constructor(n, stream) {
-    super(stream);
+  constructor(n, stream, scheduler) {
+    super(stream, scheduler);
     this.n = n;
   }
 
   _subscribe(observer) {
-    return this.stream.subscribe(TakeFlow.sink(this.n, observer));
+    return TakeFlow.sink(this.n, observer)
+      .run(this.stream);
   }
 
   static sink(n, observer) {
@@ -25,8 +27,9 @@ class TakeFlow extends Flow {
   }
 }
 
-class TakeSink {
+class TakeSink extends Sink {
   constructor(n, observer) {
+    super();
     this.n = n;
     this.observer = observer;
   }

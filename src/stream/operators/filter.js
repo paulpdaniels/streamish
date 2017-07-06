@@ -4,20 +4,20 @@
  */
 'use strict';
 import { Flow } from '../Flow';
+import { Sink } from '../Sink';
 
 export default function filter(fn) {
-  return flow => new FilterFlow(fn, flow);
+  return (flow, scheduler) => new FilterFlow(fn, flow, scheduler);
 }
 
 class FilterFlow extends Flow {
-  constructor(fn, flow) {
-    super(flow);
+  constructor(fn, flow, scheduler) {
+    super(flow, scheduler);
     this.fn = fn;
-    this.flow = flow;
   }
 
   _subscribe(observer) {
-    return this.flow.subscribe(FilterFlow.sink(this.fn, observer));
+    return FilterFlow.sink(this.fn, observer).run(this.stream);
   }
 
   static sink(fn, observer) {
@@ -25,21 +25,23 @@ class FilterFlow extends Flow {
   }
 }
 
-class FilterSink {
+class FilterSink extends Sink {
   constructor(fn, observer) {
+    super();
     this.fn = fn;
     this.observer = observer;
   }
 
-  next(v) {
+  _next(v) {
     let _p, _e;
     try { _p = this.fn(v); } catch (e) { _e = e; }
     if (_e) {
-      this.observer.error(_e);
+      this.error(_e);
     } else {
       _p && this.observer.next(v);
     }
   }
-  error(e) { this.observer.error(e); }
-  complete() { this.observer.complete(); }
+
+  _error(e) { this.observer.error(e); }
+  _complete() { this.observer.complete(); }
 }

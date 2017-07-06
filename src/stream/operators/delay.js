@@ -4,16 +4,16 @@
  */
 'use strict';
 import { Flow } from '../Flow';
+import { Sink } from '../Sink';
 
-export default function timeShift(delayTime, scheduler) {
-  return f => new TimeShiftFlow(delayTime, scheduler, f);
+export default function timeShift(delayTime) {
+  return (f, scheduler) => new TimeShiftFlow(delayTime, f, scheduler);
 }
 
 class TimeShiftFlow extends Flow {
-  constructor(delayTime, scheduler, stream) {
-    super(stream);
+  constructor(delayTime, stream, scheduler) {
+    super(stream, scheduler);
     this.delayTime = delayTime;
-    this.scheduler = scheduler;
     this.stream = stream;
   }
 
@@ -28,26 +28,27 @@ class TimeShiftFlow extends Flow {
   }
 }
 
-class TimeShiftSink {
+class TimeShiftSink extends Sink {
   constructor(delayTime, scheduler, observer) {
+    super();
     this.delayTime = delayTime;
     this.scheduler = scheduler;
     this.observer = observer;
   }
 
-  next(v) {
-    this.scheduler.schedule([this.observer, v], this.delayTime)(
+  _next(v) {
+    this.scheduler.schedule([this.observer, v], this.delayTime,
       ([state, n]) => state.next(n)
     );
   }
-  error(e) {
+
+  _error(e) {
     this.observer.error(e);
   }
-  complete() {
-    this.scheduler.schedule(this.observer, this.delayTime)(
+
+  _complete() {
+    this.scheduler.schedule(this.observer, this.delayTime,
       (state) => state.complete()
     )
   }
 }
-
-module.exports = timeShift;

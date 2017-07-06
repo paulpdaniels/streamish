@@ -3,16 +3,17 @@
  *  @author Paul Daniels
  */
 "use strict";
-import { Flow } from '../Flow';
+import {Flow} from '../Flow';
+import {Sink} from '../Sink';
 import _fill from './internal/_fill';
 import pipe from './pipe';
 import streamMap from './flatMap';
 import map from './map';
 import filter from './filter';
-import { Stream } from '../Stream';
+import {Stream} from '../Stream';
 
 export default function combine(fn, ...streams) {
-  return (f) => new CombineFlow(fn, [f, ...streams]);
+  return (f, scheduler) => new CombineFlow(fn, [f, ...streams], scheduler);
 }
 
 function withIndex(stream, i) {
@@ -20,10 +21,10 @@ function withIndex(stream, i) {
 }
 
 class CombineFlow extends Flow {
-  constructor(fn, streams) {
-    super();
+  constructor(fn, streams, scheduler) {
+    super(Stream(streams), scheduler);
     this.fn = fn;
-    this.streams = streams;
+    this.len = streams.length;
   }
 
   static _curriedMap(values, hasValues) {
@@ -36,17 +37,17 @@ class CombineFlow extends Flow {
   }
 
   _subscribe(observer) {
-    const values = new Array(this.streams.length);
-    const hasValues = new Array(this.streams.length);
-    _fill(hasValues, this.streams.length, false);
+    const values = new Array(this.len);
+    const hasValues = new Array(this.len);
+    _fill(hasValues, this.len, false);
 
     const _flow = pipe(
       streamMap(withIndex),
       map(CombineFlow._curriedMap(values, hasValues)),
       filter(_ => hasValues.indexOf(false) < 0)
-    )(Stream(this.streams));
+    )(this.stream);
 
-    return _flow.subscribe(CombineFlow.sink(this.fn, observer));
+    return CombineFlow.sink(this.fn, observer).run(_flow);
   }
 
   static sink(fn, observer) {
@@ -54,25 +55,32 @@ class CombineFlow extends Flow {
   }
 }
 
-class CombineSink {
+class CombineSink extends Sink {
   constructor(fn, observer) {
+    super();
     this.fn = fn;
     this.observer = observer;
   }
 
-  next(v) {
+  _next(v) {
     let _r, _e;
-    try {_r = this.fn.apply(null, v); } catch(e) { _e = e; }
+    try {
+      _r = this.fn.apply(null, v);
+    } catch (e) {
+      _e = e;
+    }
     if (_e) {
-      this.observer.error(_e);
+      this.error(_e);
     } else {
       this.observer.next(_r);
     }
   }
-  error(e) {
+
+  _error(e) {
     this.observer.error(e);
   }
-  complete() {
+
+  _complete() {
     this.observer.complete();
   }
 }

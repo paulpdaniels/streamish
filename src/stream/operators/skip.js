@@ -5,6 +5,7 @@
 "use strict";
 
 import { Flow } from '../Flow';
+import { Sink } from '../Sink';
 
 export default function skip(n) {
   return f => new SkipFlow(n, f);
@@ -17,7 +18,7 @@ class SkipFlow extends Flow {
   }
 
   _subscribe(observer) {
-    return this.stream.subscribe(SkipFlow.sink(this.n, observer));
+    return SkipFlow.sink(this.n, observer).run(this.stream);
   }
 
   static sink(n, observer) {
@@ -25,24 +26,25 @@ class SkipFlow extends Flow {
   }
 }
 
-class SkipSink {
+class SkipSink extends Sink {
   constructor(n, observer) {
+    super();
     this.n = n;
     this.observer = observer;
   }
 
-  next(v) {
+  _next(v) {
     this.n--;
     if (this.n < 0) {
       this.observer.next(v);
     }
   }
 
-  error(e) {
+  _error(e) {
     this.observer.error(e);
   }
 
-  complete() {
+  _complete() {
     this.observer.complete();
   }
 }

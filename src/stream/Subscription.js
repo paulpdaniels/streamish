@@ -4,14 +4,24 @@
  */
 export class Subscription {
   constructor(fn) {
-    this.fn = fn;
+    this.fn = [fn];
     this.disposed = false;
   }
 
   unsubscribe() {
     if (!this.disposed) {
-      this.fn();
+      const { fn } = this;
+      for (let f of fn) {
+        f();
+      }
       this.disposed = true;
     }
   }
+
+  add(sub) {
+    this.fn.push(sub);
+    return this;
+  }
 }
+
+Subscription.empty = new Subscription(() => {});

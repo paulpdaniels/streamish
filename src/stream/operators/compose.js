@@ -5,12 +5,9 @@
 'use strict';
 
 import _pipe from './internal/_pipe';
+import _reverse from "./internal/_reverse";
 
 export default function compose(...operators) {
   const [head, ...tail] = _reverse(operators);
   return _pipe(head, tail);
-}
-
-function _reverse(operators) {
-  return Array.prototype.slice.call(operators, 0).reverse();
 }

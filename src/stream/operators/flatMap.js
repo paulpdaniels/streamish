@@ -4,20 +4,21 @@
  */
 'use strict';
 import { Flow } from '../Flow';
+import { Sink } from '../Sink';
 
 export default function flatMap(fn, concurrency = Number.POSITIVE_INFINITY) {
-  return flow => new FlatMapFlow(fn, concurrency, flow);
+  return (flow, scheduler) => new FlatMapFlow(fn, concurrency, flow, scheduler);
 }
 
 export class FlatMapFlow extends Flow {
-  constructor(fn, concurrency, flow) {
-    super(flow);
+  constructor(fn, concurrency, flow, scheduler) {
+    super(flow, scheduler);
     this.fn = fn;
     this.concurrency = concurrency;
   }
 
-  _subscribe(sink) {
-    return this.stream.subscribe(FlatMapFlow.sink(this.fn, this.concurrency, sink));
+  _subscribe(observer) {
+    return FlatMapFlow.sink(this.fn, this.concurrency, observer).run(this.stream);
   }
 
   static sink(fn, concurrency, observer) {
@@ -25,8 +26,9 @@ export class FlatMapFlow extends Flow {
   }
 }
 
-class StreamSink {
+class StreamSink extends Sink {
   constructor(fn, concurrency, observer) {
+    super();
     this.fn = fn;
     this.observer = observer;
     this.concurrency = concurrency;
@@ -35,53 +37,53 @@ class StreamSink {
     this.queue = [];
   }
 
-  next(v) {
+  _next(v) {
     if (this.active < this.concurrency) {
-      this.activate(v);
+      this._activate(v);
       this.active++;
     } else {
       this.queue.push(v);
     }
   }
 
-  error(e) {
+  _error(e) {
     this.observer.error(e);
   }
 
-  complete() {
+  _complete() {
     this.observer.complete();
   }
 
-  activate(v) {
-    this.fn(v, this.index++)
-      .subscribe(new InnerSink(this, this.observer));
+  _activate(v) {
+    const source = this.fn(v, this.index++);
+    return new InnerSink(this, this.observer).run(source);
   }
 
   completeInner() {
     this.active--;
     if (this.active < this.concurrency && this.queue.length > 0) {
-      this.activate(this.queue.shift());
+      this._activate(this.queue.shift());
       this.active++;
     }
   }
-
 }
 
-class InnerSink {
+class InnerSink extends Sink {
   constructor(parent, observer) {
+    super();
     this.observer = observer;
     this.parent = parent;
   }
 
-  next(v) {
+  _next(v) {
     this.observer.next(v);
   }
 
-  error(e) {
+  _error(e) {
     this.observer.error(e);
   }
 
-  complete() {
+  _complete() {
     this.parent.completeInner();
   }
 }
