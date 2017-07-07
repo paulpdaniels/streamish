@@ -3,8 +3,9 @@
  *  @author Paul Daniels
  */
 'use strict';
-import { Flow } from '../Flow';
-import { Stream }  from '../Stream';
+import {Flow} from '../Flow';
+import {Sink} from '../Sink';
+import {Stream}  from '../Stream';
 import flatMap from './flatMap';
 import map from './map';
 import filter from './filter';
@@ -60,7 +61,9 @@ class ZipFlow extends Flow {
         if (!hasValues.some(v => v < 0)) {
           const out = values.shift();
           // We have one less value for each hasValue
-          for (let i = 0; i < len; ++i) { hasValues[i] -= 1; }
+          for (let i = 0; i < len; ++i) {
+            hasValues[i] -= 1;
+          }
           return out;
         } else {
           return unit;
@@ -69,7 +72,7 @@ class ZipFlow extends Flow {
       filter(x => x !== unit)
     )(Stream(this.streams));
 
-    return _flow.subscribe(ZipFlow.sink(this.fn, observer));
+    return ZipFlow.sink(this.fn, observer).run(_flow);
   }
 
   static sink(fn, observer) {
@@ -77,27 +80,33 @@ class ZipFlow extends Flow {
   }
 }
 
-class ZipSink {
+class ZipSink extends Sink {
   constructor(fn, observer) {
+    super();
     this.fn = fn;
     this.observer = observer;
   }
 
-  next(v) {
+  _next(v) {
     let _r, _e;
-    try {_r = this.fn(...v); } catch(e) { _e = e; }
+    try {
+      _r = this.fn(...v);
+    } catch (e) {
+      _e = e;
+    }
     if (_e) {
-      this.observer.error(_e);
+      this.error(_e);
     } else {
       this.observer.next(_r);
     }
   }
-  error(e) {
+
+  _error(e) {
     this.observer.error(e);
   }
-  complete() {
+
+  _complete() {
     this.observer.complete();
   }
 }
 
-module.exports = zip;

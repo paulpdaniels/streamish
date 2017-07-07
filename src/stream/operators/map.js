@@ -4,49 +4,50 @@
  */
 'use strict';
 import { Flow } from '../Flow';
+import { Sink } from '../Sink';
 
 export default function map(fn) {
-  return flow => new MapFlow(fn, flow);
+  return (flow, scheduler) => new MapFlow(fn, flow, scheduler);
 }
 
 class MapFlow extends Flow {
-  constructor(fn, flow) {
-    super(flow);
+  constructor(fn, flow, scheduler) {
+    super(flow, scheduler);
     this.fn = fn;
-    this.flow = flow;
 
   }
 
   _subscribe(observer) {
-    this.flow.subscribe(this.sink(observer));
+    return MapFlow.sink(this.fn, observer).run(this.stream);
   }
 
-  sink(observer) {
-    return new MapSink(this.fn, observer);
+  static sink(fn, observer) {
+    return new MapSink(fn, observer);
   }
 }
 
-class MapSink {
+class MapSink extends Sink {
   constructor(fn, observer) {
+    super();
     this.fn = fn;
     this.observer = observer;
   }
 
-  next(v) {
+  _next(v) {
     let _r, _e;
     try { _r = this.fn(v); } catch(e) { _e = e; }
     if (_e) {
-      this.observer.error(_e);
+      this.error(_e);
     } else {
       this.observer.next(_r)
     }
   }
-  error(e) {
+
+  _error(e) {
     this.observer.error(e);
   }
-  complete() {
+
+  _complete() {
     this.observer.complete();
   }
 }
-
-module.exports = map;

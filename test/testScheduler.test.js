@@ -21,7 +21,7 @@ test('should be able to schedule and execute an action', () => {
   const expected = 42;
   let actual;
 
-  scheduler.schedule(expected, 10)(
+  scheduler.schedule(expected, 10,
     s => actual = s
   );
 
@@ -37,7 +37,7 @@ test('should be able to schedule and execute an absolute action', () => {
   const expected = 42;
   let actual;
 
-  scheduler.schedule(expected, 10)(
+  scheduler.schedule(expected, 10,
     s => actual = s
   );
 
@@ -54,11 +54,11 @@ test('should be able to execute actions in order', () => {
 
   const push = (s) => actual.push(s);
 
-  scheduler.schedule(2, 10)(push);
+  scheduler.schedule(2, 10, push);
 
-  scheduler.schedule(3, 20)(push);
+  scheduler.schedule(3, 20, push);
 
-  scheduler.schedule(1, 5)(push);
+  scheduler.schedule(1, 5, push);
 
   scheduler.advanceTo(30);
 

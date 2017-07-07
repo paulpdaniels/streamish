@@ -8,5 +8,3 @@ import skip from './skip';
 export default function tail() {
   return skip(1);
 }
-
-module.exports = tail;

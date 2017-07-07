@@ -12,7 +12,7 @@ test('should delay emission of events', sandbox(scheduler => () => {
 
   const actual = [];
   subscribe(v => actual.push(v))(
-    timeShift(10, scheduler)(Stream([1, 2, 3]))
+    timeShift(10)(Stream([1, 2, 3]), scheduler)
   );
 
   expect(actual).toEqual([]);

@@ -17,7 +17,7 @@ export class FakeWindow {
 
   setTimeout(fn, duration, ...args) {
     const current = this.index++;
-    this.pending[current] = this.scheduler.schedule(args, duration)(
+    this.pending[current] = this.scheduler.schedule(args, duration,
       (state, scheduler) => fn.apply(null, [...state, scheduler])
     );
     return current;

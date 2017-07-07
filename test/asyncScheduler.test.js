@@ -13,7 +13,7 @@ test('should schedule tasks asynchronously', sandbox(testScheduler => () => {
   const scheduler = new AsyncScheduler(fakeWindow);
   let actual;
 
-  scheduler.schedule(42, 5)(
+  scheduler.schedule(42, 5,
     s => actual = s
   );
 

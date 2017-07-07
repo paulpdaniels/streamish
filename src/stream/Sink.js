@@ -5,22 +5,45 @@
 'use strict';
 export class Sink {
   constructor(next, error, complete, context) {
-    this._next = next;
-    this._error = error;
-    this._complete = complete;
-    this.context = context;
+    this._next || (this._next = next);
+    this._error || (this._error = error);
+    this._complete || (this._complete = complete);
+    this.context = context || this;
+    this.isStopped = false;
+    this.sub = null;
+  }
+
+  run(source) {
+    return this.sub || (this.sub = source.subscribe(this));
   }
 
   next(v) {
-    this._next.call(this.context, v);
+    if (!this.isStopped) {
+      this._next.call(this.context, v);
+    }
   }
 
   complete() {
-    this._complete.call(this.context);
+    if (!this.isStopped) {
+      this._complete.call(this.context);
+      this.unsubscribe();
+    }
   }
 
   error(e) {
-    this._error.call(this.context, e);
+    if (!this.isStopped) {
+      this._error.call(this.context, e);
+      this.unsubscribe();
+    }
   }
 
+  unsubscribe() {
+    if (!this.isStopped) {
+      this._unsubscribe();
+      this.sub && this.sub.unsubscribe();
+      this.isStopped = true;
+    }
+  }
+
+  _unsubscribe() {}
 }

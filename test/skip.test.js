@@ -22,3 +22,9 @@ test('should skip the set number of values', () => {
 
 
 });
+
+test('should forward errors', () => {
+
+
+
+});
