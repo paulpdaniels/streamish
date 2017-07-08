@@ -35,7 +35,9 @@ class TimeShiftSink extends Sink {
   }
 
   _next(v) {
-    this.scheduler.schedule([this.observer, v], this.delayTime,
+    this.scheduler.schedule(
+      [this.observer, v],
+      this.delayTime,
       ([state, n]) => state.next(n)
     );
   }
