@@ -3,8 +3,8 @@
  *  @author Paul Daniels
  */
 export class Subscription {
-  constructor(fn) {
-    this.fn = [fn];
+  constructor(...fn) {
+    this.fn = [...fn];
     this.disposed = false;
   }
 
