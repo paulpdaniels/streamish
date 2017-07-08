@@ -12,7 +12,10 @@ export class Subscription {
     if (!this.disposed) {
       const { fn } = this;
       for (let f of fn) {
-        f();
+        if (f.unsubscribe)
+          f.unsubscribe();
+        else if (f)
+          f();
       }
       this.disposed = true;
     }

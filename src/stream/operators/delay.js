@@ -14,13 +14,11 @@ class TimeShiftFlow extends Flow {
   constructor(delayTime, stream, scheduler) {
     super(stream, scheduler);
     this.delayTime = delayTime;
-    this.stream = stream;
   }
 
   _subscribe(observer) {
-    return this.stream.subscribe(
-      TimeShiftFlow.sink(this.delayTime, this.scheduler, observer)
-    )
+    return TimeShiftFlow.sink(this.delayTime, this.scheduler, observer)
+      .run(this.stream);
   }
 
   static sink(delayTime, scheduler, observer) {

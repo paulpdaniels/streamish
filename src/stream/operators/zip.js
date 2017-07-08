@@ -12,35 +12,26 @@ import filter from './filter';
 import pipe from './pipe';
 import _fill from "./internal/_fill";
 
-export default function zip(fn) {
-  return (...streams) => new ZipFlow(fn, streams);
+export default function zip(fn, ...streams) {
+  return (flow, scheduler) => new ZipFlow(fn, [flow, ...streams], scheduler);
 }
 
 function withIndex(stream, i) {
   return map(v => [i, v])(stream);
 }
 
-function isFull(count, array) {
-  for (let i = 0; i < count; i++) {
-    if (typeof array[i] === 'undefined')
-      return false;
-  }
-
-  return true;
-}
-
 const unit = {__type: 'unit'};
 
 class ZipFlow extends Flow {
-  constructor(fn, streams) {
-    super();
+  constructor(fn, streams, scheduler) {
+    super(Stream(streams), scheduler);
     this.fn = fn;
-    this.streams = streams;
+    this.len = streams.length;
   }
 
   _subscribe(observer) {
     const values = [];
-    const len = this.streams.length;
+    const { len } = this;
     const hasValues = new Array(len);
     _fill(hasValues, len, -1);
     const _flow = pipe(
@@ -70,7 +61,7 @@ class ZipFlow extends Flow {
         }
       }),
       filter(x => x !== unit)
-    )(Stream(this.streams));
+    )(this.stream);
 
     return ZipFlow.sink(this.fn, observer).run(_flow);
   }

@@ -42,6 +42,10 @@ class FilterSink extends Sink {
     }
   }
 
-  _error(e) { this.observer.error(e); }
-  _complete() { this.observer.complete(); }
+  _error(e) {
+    this.observer.error(e);
+  }
+  _complete() {
+    this.observer.complete();
+  }
 }

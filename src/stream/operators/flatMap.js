@@ -5,6 +5,7 @@
 'use strict';
 import { Flow } from '../Flow';
 import { Sink } from '../Sink';
+import { Subscription } from '../Subscription';
 
 export default function flatMap(fn, concurrency = Number.POSITIVE_INFINITY) {
   return (flow, scheduler) => new FlatMapFlow(fn, concurrency, flow, scheduler);
@@ -35,12 +36,13 @@ class StreamSink extends Sink {
     this.active = 0;
     this.index = 0;
     this.queue = [];
+    this.subs = new Subscription(() => {});
   }
 
   _next(v) {
     if (this.active < this.concurrency) {
-      this._activate(v);
       this.active++;
+      this._activate(v);
     } else {
       this.queue.push(v);
     }
@@ -50,21 +52,42 @@ class StreamSink extends Sink {
     this.observer.error(e);
   }
 
-  _complete() {
-    this.observer.complete();
+  complete() {
+    if (!this.isStopped) {
+      this.completed = true;
+      if (this.active <= 0) {
+        this.observer.complete();
+        this.unsubscribe();
+      }
+    }
   }
 
   _activate(v) {
     const source = this.fn(v, this.index++);
-    return new InnerSink(this, this.observer).run(source);
+    const sub = new InnerSink(this, this.observer).run(source);
+    this.subs.add(sub);
+    return sub;
   }
 
   completeInner() {
     this.active--;
     if (this.active < this.concurrency && this.queue.length > 0) {
-      this._activate(this.queue.shift());
       this.active++;
+      this._activate(this.queue.shift());
+    } else if (this.completed) {
+      this.complete();
     }
+  }
+
+  errorInner(e) {
+    this.error(e);
+    this.unsubscribe();
+  }
+
+  _unsubscribe() {
+    this.queue = [];
+    this.active = 0;
+    this.subs.unsubscribe();
   }
 }
 
@@ -80,7 +103,7 @@ class InnerSink extends Sink {
   }
 
   _error(e) {
-    this.observer.error(e);
+    this.parent.errorInner(e);
   }
 
   _complete() {
