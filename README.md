@@ -1,10 +1,9 @@
 # streamish
 A simple Functional Reactive Streaming library
 
+[![CircleCI](https://img.shields.io/circleci/project/github/paulpdaniels/streamish.svg)](https://github.com/paulpdaniels/streamish)
 
-[![CircleCI](https://img.shields.io/circleci/project/github/RedSparr0w/node-csgo-parser.svg?style=flat-square)](https://github.com/paulpdaniels/streamish)
-
-[![Codecov](https://img.shields.io/codecov/c/github/codecov/example-python.svg?style=flat-square)](https://github.com/paulpdaniels/streamish)
+[![Codecov](https://img.shields.io/codecov/c/github/paulpdaniels/streamish.svg)](https://github.com/paulpdaniels/streamish)
 
 ## Warning! Work in progress!
 
