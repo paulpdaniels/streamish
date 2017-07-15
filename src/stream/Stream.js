@@ -1,78 +1,27 @@
 
 'use strict';
 import { Flow } from './Flow';
-import { Sink } from './Sink';
-
-function promiseLike(promise) {
-  return {
-    subscribe(observer) {
-      promise
-        .then(x => {
-          observer.next(x);
-          observer.complete();
-        })
-        .catch(e => observer.error(e));
-    }
-  };
-}
-
-function iterableLike(iterable) {
-  return {
-    subscribe(observer) {
-      for (let item of iterable) {
-        try {
-          observer.next(item);
-        } catch (e) {
-          observer.error(e);
-        }
-      }
-      observer.complete();
-    }
-  }
-}
-
-function isStreamLike(source) {
-  return source && typeof source.subscribe === 'function';
-}
+import getObservable from "./observable/getObservable";
+import fromPromise from "./source/fromPromise";
+import fromIterable from "./source/fromIterable";
 
 function isPromiseLike(source) {
   return source && typeof source.then === 'function';
 }
 
 function isIterable(source) {
-  return source && typeof source.length === 'number';
+  return (source && typeof source[Symbol.iterator] === 'function');
 }
 
-function isFunction(source) {
-  return typeof source === 'function';
-}
-
-export function Stream(source) {
-  if (isStreamLike(source)) {
-    return from(source);
+export function Stream(source, scheduler) {
+  let obs;
+  if ((obs = getObservable(source))) {
+    return new Flow(obs, scheduler);
   } else if (isPromiseLike(source)) {
-    return fromPromise(source);
+    return fromPromise(source, scheduler);
   } else if (isIterable(source)) {
-    return fromIterable(source);
-  } else if (isFunction(source)) {
-    return fromFunction(source);
+    return fromIterable(source, scheduler);
   } else {
     throw new Error(`Warning: Cannot stream type ${typeof source}`);
   }
-}
-
-function from(stream) {
-  return new Flow(stream);
-}
-
-function fromPromise(promise) {
-  return new Flow(promiseLike(promise));
-}
-
-function fromIterable(iterable) {
-  return new Flow(iterableLike(iterable));
-}
-
-function fromFunction(fn) {
-  return new Flow({subscribe: fn});
 }

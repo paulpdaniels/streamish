@@ -34,7 +34,7 @@ class TakeSink extends Sink {
     this.observer = observer;
   }
 
-  next(v) {
+  _next(v) {
     this.n--;
     if (this.n < 0) {
       this.observer.complete();
@@ -43,11 +43,11 @@ class TakeSink extends Sink {
     }
   }
 
-  error(e) {
+  _error(e) {
     this.observer.error(e);
   }
 
-  complete() {
+  _complete() {
     this.observer.complete();
   }
 }

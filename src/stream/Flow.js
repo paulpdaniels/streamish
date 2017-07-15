@@ -5,6 +5,7 @@
 'use strict';
 
 import { Subscription } from './Subscription';
+import symbolObservable from 'symbol-observable'
 
 export class Flow {
   constructor(stream, scheduler) {
@@ -27,5 +28,9 @@ export class Flow {
 
   _subscribe(sink) {
     return this.stream.subscribe(sink);
+  }
+
+  [symbolObservable]() {
+    return this;
   }
 }

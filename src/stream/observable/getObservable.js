@@ -3,7 +3,7 @@
  */
 
 
-import symbolObservable from 'symbol-observable'
+import symbolObservable from 'symbol-observable';
 
 
 export default function getObservable(o) { // eslint-disable-line complexity

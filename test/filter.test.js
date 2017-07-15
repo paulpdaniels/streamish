@@ -47,3 +47,19 @@ test('should halt on error', sandbox(scheduler => () => {
   expect(errors).toEqual([42]);
 
 }));
+
+test('should handle exceptions thrown from selector', () => {
+
+  const errors = [];
+  const result = [];
+  const stream = new Stream([1, 2, 3]);
+
+  pipe(
+    filter(x => { throw 42; }),
+    subscribe(x => result.push(x), e => errors.push(e))
+  )(stream);
+
+    expect(result).toEqual([]);
+    expect(errors).toEqual([42]);
+
+});

@@ -46,3 +46,22 @@ test('should forward errors from the primary stream', sandbox(scheduler => () =>
     expect(errors).toEqual([42]);
 
 }));
+
+test('should forward errors from the selector', sandbox(scheduler => () => {
+  const {next, error, complete} = Record;
+  const result = [];
+  const errors = [];
+
+  const primary = scheduler.createHotStream(next(10, 1));
+  const secondary = scheduler.createHotStream(next(15, 2), next(20, 3), complete(100));
+
+  pipe(
+    combine((...a) => {throw 42}, secondary),
+    subscribe(x => result.push(x), e => errors.push(e))
+  )(primary, scheduler);
+
+  scheduler.advanceTo(100);
+
+  expect(result).toEqual([]);
+  expect(errors).toEqual([42]);
+}));

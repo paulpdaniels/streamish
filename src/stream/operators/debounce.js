@@ -40,21 +40,17 @@ class DebounceSink extends Sink {
     observer.next(value);
   }
 
-  next(v) {
-    if (!this.isStopped) {
-      this.debouncer && this.debouncer.unsubscribe();
-      this.debouncer = this.scheduler.schedule([this.observer, v], this.delay, DebounceSink.action)
-    }
+  _next(v) {
+    this.debouncer && this.debouncer.unsubscribe();
+    this.debouncer = this.scheduler.schedule([this.observer, v], this.delay, DebounceSink.action)
   }
 
-  error(e) {
+  _error(e) {
     this.observer.error(e);
-    this.unsubscribe();
   }
 
-  complete() {
+  _complete() {
     this.observer.complete();
-    this.unsubscribe();
   }
 
   _unsubscribe() {

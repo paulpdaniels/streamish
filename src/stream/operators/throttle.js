@@ -2,6 +2,8 @@
  * Created by paulp on 7/4/2017.
  */
 
+import {Flow} from "../Flow";
+import {Sink} from "../Sink";
 export default function throttle(timeSpan) {
   return (flow, scheduler) => new ThrottleFlow(flow, timeSpan, scheduler);
 }
@@ -24,8 +26,9 @@ class ThrottleFlow extends Flow {
 }
 
 
-class ThrottleSink {
+class ThrottleSink extends Sink {
   constructor(observer, timeSpan, scheduler) {
+    super();
     this.observer = observer;
     this.timeSpan = timeSpan;
     this.scheduler = scheduler;
@@ -37,7 +40,7 @@ class ThrottleSink {
     return this.sub = source.subscribe(this);
   }
 
-  next(v) {
+  _next(v) {
     const now = this.scheduler.now();
     if (this.lastEmission < 0 || now - this.lastEmission >= this.timeSpan) {
       this.lastEmission = now;
@@ -45,14 +48,12 @@ class ThrottleSink {
     }
   }
 
-  error(e) {
+  _error(e) {
     this.observer.error(e);
-    this.unsubscribe();
   }
 
-  complete() {
+  _complete() {
     this.observer.complete();
-    this.unsubscribe();
   }
 
   unsubscribe() {

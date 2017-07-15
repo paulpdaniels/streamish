@@ -8,6 +8,7 @@ import subscribe from '../src/stream/operators/subscribe';
 import zip from '../src/stream/operators/zip';
 import {sandbox} from "./helpers/sandbox";
 import {Record} from "../src/stream/operators/notification";
+import pipe from "../src/stream/operators/pipe";
 
 
 test('Can zip streams', () => {
@@ -67,3 +68,23 @@ test('should forward errors from secondary stream', sandbox(scheduler => () => {
   expect(result).toEqual([3]);
   expect(errors).toEqual([42]);
 }));
+
+test('should forward exceptions from selector', () => {
+
+  const primary = Stream([1, 2, 3]);
+  const secondary = Stream([1 ,2 ,3]);
+  const result = [];
+  const errors = [];
+
+  pipe(
+    zip(() => { throw 42; }, secondary),
+    subscribe(
+      x => result.push(x),
+      e => errors.push(e)
+    )
+  )(primary);
+
+    expect(result).toEqual([]);
+    expect(errors).toEqual([42]);
+
+});
