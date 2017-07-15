@@ -38,3 +38,19 @@ test('should forward an error from a promise', sandbox(scheduler => async () => 
 
   scheduler.advanceTo(10);
 }));
+
+test('should forward an error normally without a scheduler', async () => {
+  expect.assertions(1);
+  const p = Promise.reject(42);
+  const promise$ = fromPromise(p);
+  let out;
+
+  subscribe(x => {
+    fail('Should not have emitted value!');
+  }, e => {
+    out = new Promise((_,reject) => reject(e));
+  })(promise$);
+
+
+  await expect(p.then(() => out)).rejects.toBe(42);
+});

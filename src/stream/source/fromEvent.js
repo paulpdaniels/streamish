@@ -2,6 +2,8 @@
  * Created by paulp on 7/8/2017.
  */
 
+import { Subscription } from '../Subscription';
+
 export default function fromEvent(source, eventName, projector) {
   const {on, off, removeEventListener, addEventListener} = source;
 
@@ -19,8 +21,8 @@ export default function fromEvent(source, eventName, projector) {
 
 class EventPatternSource {
   constructor(add, remove, projector) {
-    this.add = add;
-    this.remove = remove;
+    this.add = add || (() => Subscription.empty);
+    this.remove = remove || (() => {});
     this.projector = projector;
   }
 

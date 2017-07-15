@@ -3,7 +3,8 @@
  */
 
 import getObservable from '../observable/getObservable';
+import {Flow} from '../Flow';
 
 export default function fromObservable(o, scheduler) {
-  return Stream(getObservable(o), scheduler);
+  return new Flow(getObservable(o), scheduler);
 }

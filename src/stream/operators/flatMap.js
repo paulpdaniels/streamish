@@ -36,7 +36,7 @@ class StreamSink extends Sink {
     this.active = 0;
     this.index = 0;
     this.queue = [];
-    this.subs = new Subscription(() => {});
+    this.subs = new Subscription();
   }
 
   _next(v) {
