@@ -1,0 +1,4 @@
+test/
+gulpfile.js
+coverage/
+node_modules/

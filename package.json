@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "babel src -d lib"
+    "build": "babel src -d es"
   },
   "author": "Paul Daniels",
   "license": "MIT",
