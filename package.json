@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "babel src -d es"
+    "build": "babel src/stream -d es",
+    "bundle": "mkdir bundles && babel src/stream/index.js -o bundles/streamish.js"
   },
   "author": "Paul Daniels",
   "license": "MIT",
