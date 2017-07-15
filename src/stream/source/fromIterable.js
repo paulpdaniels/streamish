@@ -3,6 +3,7 @@
  */
 
 import {Flow} from '../Flow';
+import {Subscription} from '../Subscription';
 
 export default function fromIterable(obj, scheduler) {
   return new IterableSource(obj, scheduler);
@@ -23,7 +24,7 @@ class IterableSource extends Flow {
     } else {
       try {
         sink.next(value);
-        scheduler.schedule([iterator, sink], 0, IterableSource.dispatchValue);
+        return scheduler.schedule([iterator, sink], 0, IterableSource.dispatchValue);
       } catch (e) {
         sink.error(e);
       }
@@ -34,7 +35,7 @@ class IterableSource extends Flow {
     const {iterable} = this;
     if (this.scheduler) {
       // Need recursive scheduling
-      this.scheduler.schedule([iterable[Symbol.iterator](), sink], 0, IterableSource.dispatchValue);
+      return this.scheduler.schedule([iterable[Symbol.iterator](), sink], 0, IterableSource.dispatchValue);
     } else {
       for (let item of iterable) {
         try {
@@ -44,6 +45,7 @@ class IterableSource extends Flow {
         }
       }
       sink.complete();
+      return Subscription.empty;
     }
   }
 }
