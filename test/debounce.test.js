@@ -8,11 +8,11 @@ import {Stream} from "../src/stream/Stream";
 import subscribe from "../src/stream/operators/subscribe";
 import pipe from "../src/stream/operators/pipe";
 import {Record} from "../src/stream/operators/notification";
+import {jestSubscribe} from "./helpers/testSubscribe";
+
+const {next, complete} = Record;
 
 test('should debounce the values', sandbox(scheduler => () => {
-
-  const result = [];
-  const {next, complete} = Record;
 
   const stream = scheduler.createHotStream(
     next(1, 1),
@@ -24,21 +24,17 @@ test('should debounce the values', sandbox(scheduler => () => {
 
   pipe(
     debounce(10),
-    subscribe(value => result.push(value))
+    jestSubscribe(
+      next(14, 4),
+      complete(50)
+    )
   )(stream, scheduler);
 
-  expect(result).toEqual([]);
-
   scheduler.advanceBy(50);
-
-  expect(result).toEqual([4]);
 
 }));
 
 test('should emit at the end of the debounce period', sandbox(scheduler => () => {
-
-  const {next, error, complete} = Record;
-  const result = [];
 
   const stream = scheduler.createHotStream(
     next(10, 1),
@@ -49,19 +45,19 @@ test('should emit at the end of the debounce period', sandbox(scheduler => () =>
 
   pipe(
     debounce(10),
-    subscribe(value => result.push(value))
+    jestSubscribe(
+      next(25, 2),
+      next(40, 3),
+      complete(45)
+    )
   )(stream, scheduler);
 
   scheduler.advanceBy(50);
-
-  expect(result).toEqual([2, 3]);
-
 }));
 
 test('should forward errors immediately', sandbox(scheduler => () => {
 
   const { next, error, complete} = Record;
-  const result = [];
   const theError = new Error('something bad');
 
   const stream = scheduler.createHotStream(
@@ -74,13 +70,9 @@ test('should forward errors immediately', sandbox(scheduler => () => {
   pipe(
     debounce(10),
     subscribe(
-      next => result.push(next),
-      error => result.push(error)
+      error(12, theError)
     )
   )(stream, scheduler);
 
   scheduler.advanceBy(50);
-
-  expect(result).toEqual([theError]);
-
 }));

@@ -14,7 +14,7 @@ export class Subscription {
       for (let f of fn) {
         if (f.unsubscribe)
           f.unsubscribe();
-        else if (f)
+        else if (typeof f === 'function')
           f();
       }
       this.disposed = true;

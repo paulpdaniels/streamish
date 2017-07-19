@@ -9,44 +9,29 @@ import skip from "../src/stream/operators/skip";
 import {Stream} from "../src/stream/Stream";
 import {sandbox} from "./helpers/sandbox";
 import {Record} from "../src/stream/operators/notification";
+import {jestSubscribe} from "./helpers/testSubscribe";
 
 
-test('should skip the set number of values', () => {
-
-  const result = [];
+test('should skip the set number of values', sandbox(scheduler => () => {
 
   pipe(
     skip(2),
-    subscribe(v => result.push(v))
-  )(Stream([1, 2, 3, 4]));
+    jestSubscribe('(cd|)')
+  )(Stream('abcd'), scheduler);
 
-  expect(result).toEqual([3, 4]);
-
-
-});
+  scheduler.flush();
+}));
 
 test('should forward exceptions downstream', sandbox(scheduler => () => {
 
-  const result = [];
-  const errors = [];
-
-  const {next, error} = Record;
-
-  const stream = scheduler.createHotStream(
-    next(10, 1),
-    next(20, 2),
-    error(30, 42),
-    next(40, 3)
-  );
+  const stream = scheduler.createHotStream('ab#c|', {a: 1, b: 2, c: 40});
 
   pipe(
     skip(1),
-    subscribe(v => result.push(v), e => errors.push(e))
+    jestSubscribe('-b#', {b: 2})
   )(stream, scheduler);
 
-    scheduler.advanceTo(60);
+  scheduler.flush();
 
-    expect(result).toEqual([2]);
-    expect(errors).toEqual([42]);
 
 }));

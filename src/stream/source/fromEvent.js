@@ -3,24 +3,32 @@
  */
 
 import { Subscription } from '../Subscription';
+import {Flow} from "../Flow";
 
 export default function fromEvent(source, eventName, projector) {
   const {on, off, removeEventListener, addEventListener} = source;
 
   if (addEventListener && removeEventListener) {
-    const add = (h) => addEventListener.call(source, eventName, h);
+    const add = (h) => {
+      const token = addEventListener.call(source, eventName, h);
+      return token === source ? h : token;
+    };
     const remove = (token) => removeEventListener.call(source, eventName, token);
 
     return new EventPatternSource(add, remove, projector);
-  } else if (on && off) {
-    const add = (h) => on.call(source, eventName, h);
-    const remove = (token) => off.call(source, eventName, token);
+  } else if (on) {
+    const add = (h) => {
+      const token = on.call(source, eventName, h);
+      return token === source ? h : token;
+    };
+    const remove = (token) => off && off.call(source, eventName, token);
     return new EventPatternSource(add, remove, projector);
   }
 }
 
-class EventPatternSource {
+class EventPatternSource extends Flow {
   constructor(add, remove, projector) {
+    super();
     this.add = add || (() => Subscription.empty);
     this.remove = remove || (() => {});
     this.projector = projector;
@@ -32,7 +40,7 @@ class EventPatternSource {
       observer.next(out);
     };
 
-    const token = this.add(next);
+    let token = this.add(next);
 
     return new Subscription(() => this.remove(token));
   }

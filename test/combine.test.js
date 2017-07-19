@@ -32,7 +32,7 @@ test('should forward errors from the primary stream', sandbox(scheduler => () =>
   const result = [];
   const errors = [];
 
-  const primary = scheduler.createHotStream(next(10, 1), error(50, 42));
+  const primary = scheduler.createHotStream('-a--#', {a: 1});
   const secondary = scheduler.createHotStream(next(15, 2), next(20, 3), complete(100));
 
   pipe(
@@ -42,8 +42,8 @@ test('should forward errors from the primary stream', sandbox(scheduler => () =>
 
     scheduler.advanceTo(100);
 
-    expect(result).toEqual([[1, 2], [1, 3]]);
-    expect(errors).toEqual([42]);
+  expect(result).toEqual([[1, 2], [1, 3]]);
+  expect(errors).toEqual([42]);
 
 }));
 
