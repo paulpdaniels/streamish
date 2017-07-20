@@ -6,26 +6,27 @@ import pipe from "../src/stream/operators/pipe";
 import subscribe from "../src/stream/operators/subscribe";
 import {Stream} from "../src/stream/Stream";
 import head from "../src/stream/operators/head";
+import {sandbox} from "./helpers/sandbox";
+import {jestSubscribe} from "./helpers/testSubscribe";
 
-test('should take only the head of a stream', () => {
-
-  const result = [];
+test('should take only the head of a stream', sandbox(scheduler => () => {
 
   pipe(
     head(),
-    subscribe(v => result.push(v))
-  )(Stream([1, 2, 3, 4]));
+    jestSubscribe('a|')
+  )(scheduler.createHotStream('abcd|'), scheduler);
 
-  expect(result).toEqual([1]);
+  scheduler.flush();
+}));
 
-});
+test('should return empty if no values are present', sandbox(scheduler => () => {
 
-test('should return empty if no values are present', () => {
+  pipe(
+    head(),
+    jestSubscribe('|')
+  )(Stream([]), scheduler);
 
-  const result = [];
+  scheduler.flush();
 
-  pipe(head(), subscribe(v => result.push(v)))(Stream([]));
+}));
 
-  expect(result).toEqual([]);
-
-});

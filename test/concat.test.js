@@ -6,16 +6,23 @@ import pipe from "../src/stream/operators/pipe";
 import concat from "../src/stream/operators/concat";
 import {Stream} from "../src/stream/Stream";
 import subscribe from "../src/stream/operators/subscribe";
+import {sandbox} from "./helpers/sandbox";
+import {jestSubscribe} from "./helpers/testSubscribe";
 
-test('should concat two streams together', () => {
+test('should concat two streams together', sandbox(scheduler => () => {
 
-  const result = [];
+  const left      = 'abcd|';
+  const right     =     'efgh|';
+  const expected  = 'abcdefgh|';
+
+  const left$ = scheduler.createHotStream(left);
+  const right$ = scheduler.createHotStream(right);
 
   pipe(
-    concat(Stream([5, 6, 7, 8])),
-    subscribe(v => result.push(v))
-  )(Stream([1, 2, 3, 4]));
+    concat(right$),
+    jestSubscribe(expected)
+  )(left$, scheduler);
 
-  expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+  scheduler.flush();
 
-});
+}));

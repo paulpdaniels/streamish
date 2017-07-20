@@ -2,10 +2,12 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+
 "use strict";
 
 import {Subscription} from '../Subscription';
 import {VirtualTimeScheduler} from "./virtualTimeScheduler";
+import {withMarbles} from "../../../test/helpers/withMarbles";
 
 export class TestScheduler extends VirtualTimeScheduler {
   constructor() {
@@ -13,11 +15,11 @@ export class TestScheduler extends VirtualTimeScheduler {
   }
 
   createHotStream(...notifications) {
-    return new HotFlow(this, notifications);
+    return withMarbles((...input) => TestScheduler.constructStream(this, input))(...notifications);
   }
 
-  createColdFlow(notifications) {
-
+  static constructStream(scheduler, notifications) {
+    return new HotFlow(scheduler, notifications);
   }
 }
 

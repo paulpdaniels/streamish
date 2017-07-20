@@ -19,6 +19,8 @@ class TimerSource extends Flow {
     } else if (periodOrScheduler) {
       this.scheduler = periodOrScheduler;
       this.period = -1;
+    } else {
+      throw new Error('Could not build timer source!');
     }
   }
 

@@ -2,6 +2,7 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+
 'use strict';
 import {Stream} from '../src/stream/Stream';
 import subscribe  from '../src/stream/operators/subscribe';
@@ -9,6 +10,7 @@ import flatMap   from '../src/stream/operators/flatMap';
 import pipe from "../src/stream/operators/pipe";
 import {sandbox} from "./helpers/sandbox";
 import {Record} from "../src/stream/operators/notification";
+import {jestSubscribe} from "./helpers/testSubscribe";
 
 test('Can flatMap a stream', () => {
 
@@ -26,28 +28,14 @@ test('Can flatMap a stream', () => {
 
 test('should halt on error', sandbox(scheduler => () => {
 
-  const result = [];
-  const errors = [];
-
-  const {next, error, complete} = Record;
-
-  const stream = scheduler.createHotStream(
-    next(10, 1),
-    next(20, 2),
-    error(30, 42),
-    next(40, 3),
-    complete(100)
-  );
+  const stream = scheduler.createHotStream('-ab#c|', {a: 1, b: 2, c: 3});
 
   pipe(
     flatMap(x => Stream([x * 2])),
-    subscribe(x => result.push(x), e => errors.push(e))
+    jestSubscribe('-ab#', {a: 2, b: 4})
   )(stream, scheduler);
 
-  scheduler.advanceTo(100);
-
-  expect(result).toEqual([2, 4]);
-  expect(errors).toEqual([42]);
+  scheduler.flush();
 
 }));
 

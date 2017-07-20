@@ -2,19 +2,20 @@
  *  Created - 5/31/2017
  *  @author Paul Daniels
  */
+
+
 'use strict';
 
 import subscribe from '../src/stream/operators/subscribe';
 import {Stream} from '../src/stream/Stream';
 import * as Rx from 'rxjs';
 import * as XStream from 'xstream';
+import {jestSubscribe} from "./helpers/testSubscribe";
+import {sandbox} from "./helpers/sandbox";
 
-test('Can construct a stream from an array', () => {
-  let array = [];
-  subscribe(v => array.push(v))(Stream([1, 2, 3, 4]));
-
-  expect(array).toEqual([1, 2, 3, 4]);
-});
+test('Can construct a stream from an array', sandbox(scheduler => () => {
+  jestSubscribe('(abcd|)', {a: 1, b: 2, c: 3, d: 4})(Stream([1, 2, 3, 4]), scheduler);
+}));
 
 test('Can construct a stream from a Promise', (done) => {
   let array = [];

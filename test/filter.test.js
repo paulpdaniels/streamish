@@ -2,64 +2,45 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+
 'use strict';
 import { Stream } from '../src/stream/Stream';
 import subscribe from '../src/stream/operators/subscribe';
 import filter from '../src/stream/operators/filter';
-import {Record} from "../src/stream/operators/notification";
 import {sandbox} from "./helpers/sandbox";
 import pipe from "../src/stream/operators/pipe";
+import {jestSubscribe} from "./helpers/testSubscribe";
 
-test('should filter stream by predicate', () => {
-  let array = [];
+test('should filter stream by predicate', sandbox(scheduler => () => {
   const stream = Stream([1, 2, 3, 4]);
 
-  subscribe({
-    next(v) {
-      array.push(v);
-    }
-  })(filter(x => x % 2 === 0)(stream));
-
-  expect(array).toEqual([2, 4])
-});
+  pipe(
+    filter(x => x % 2 === 0),
+    jestSubscribe('(ab|)', {a: 2, b: 4})
+  )(stream, scheduler);
+}));
 
 test('should halt on error', sandbox(scheduler => () => {
 
-  const result = [];
-  const errors = [];
-  const {next, error, complete} = Record;
-  const stream = scheduler.createHotStream(
-    next(10, 1),
-    next(20, 2),
-    error(30, 42),
-    next(40, 3),
-    complete(100)
-  );
+  const mapping = {a: 1, b: 2, c: 3};
+  const stream = scheduler.createHotStream('-ab#c|', mapping);
 
   pipe(
     filter(x => x % 2 === 1),
-    subscribe(x => result.push(x), e => errors.push(e))
+    jestSubscribe('-a-#', mapping)
   )(stream, scheduler);
 
-  scheduler.advanceTo(100);
-
-  expect(result).toEqual([1]);
-  expect(errors).toEqual([42]);
+  scheduler.flush();
 
 }));
 
-test('should handle exceptions thrown from selector', () => {
+test('should handle exceptions thrown from selector', sandbox(scheduler => () => {
 
-  const errors = [];
-  const result = [];
   const stream = new Stream([1, 2, 3]);
 
   pipe(
-    filter(x => { throw 42; }),
-    subscribe(x => result.push(x), e => errors.push(e))
-  )(stream);
+    filter(() => { throw 42; }),
+    jestSubscribe('#')
+  )(stream, scheduler);
 
-    expect(result).toEqual([]);
-    expect(errors).toEqual([42]);
-
-});
+}));

@@ -50,4 +50,18 @@ export class VirtualTimeScheduler {
 
     this.frame = Math.max(this.frame, absoluteTime);
   }
+
+  flush() {
+    if (!this.isRunning && this.queue.length > 0) {
+      this.isRunning = true;
+      while (this.queue.length > 0) {
+        this.queue.sort(sortByDelay);
+        const item = this.queue.shift();
+        this.frame = item.delay;
+        item.run(this);
+      }
+      this.isRunning = false;
+    }
+  }
+
 }

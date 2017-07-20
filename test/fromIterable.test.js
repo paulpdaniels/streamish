@@ -5,37 +5,24 @@
 import fromIterable from '../src/stream/source/fromIterable';
 import subscribe from '../src/stream/operators/subscribe';
 import {sandbox} from "./helpers/sandbox";
+import {jestSubscribe} from "./helpers/testSubscribe";
 
-test('should process an entire iterable without a scheduler', () => {
+test('should process an entire iterable without a scheduler', sandbox(scheduler => () => {
 
-  const source = [1, 2, 3, 4];
-  const result = [];
-  const errors = [];
+  const source = fromIterable(['a', 'b', 'c', 'd']);
 
-  subscribe(
-    next => result.push(next),
-    error => errors.push(error)
-  )(fromIterable(source));
+  jestSubscribe('(abcd|)')(source, scheduler);
 
-  expect(result).toEqual([1, 2, 3, 4]);
+  scheduler.flush();
 
-});
+}));
 
 test('should process an entire iterable with a scheduler', sandbox(scheduler => () => {
 
-  const source = [1, 2, 3, 4];
-  const result = [];
-  const errors = [];
+  const source = fromIterable(['a', 'b', 'c', 'd'], scheduler);
 
-  subscribe(
-    next => result.push(next),
-    error => errors.push(error)
-  )(fromIterable(source, scheduler));
+  jestSubscribe('(abcd|)')(source, scheduler);
 
-  expect(result).toEqual([]);
-
-  scheduler.advanceBy(10);
-
-  expect(result).toEqual([1,2,3,4]);
+  scheduler.flush();
 
 }));

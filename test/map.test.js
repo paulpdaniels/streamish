@@ -2,6 +2,7 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+
 'use strict';
 
 import {Stream} from '../src/stream/Stream';
@@ -10,68 +11,43 @@ import map from '../src/stream/operators/map';
 import {sandbox} from "./helpers/sandbox";
 import {Record} from "../src/stream/operators/notification";
 import pipe from "../src/stream/operators/pipe";
+import {jestSubscribe} from "./helpers/testSubscribe";
 
-test('Can map a stream', () => {
+test('Can map a stream', sandbox(scheduler => () => {
 
-  let array = [];
-  const stream = Stream([1, 2, 3, 4]);
+  const input = 'abcd|';
+  const expected = 'abcd|';
 
-  subscribe({
-    next(v) {
-      array.push(v);
-    },
-    error(e) {
-      throw e;
-    }
-  })(map(x => x * x)(stream));
+  const stream = scheduler.createHotStream(input, {a: 1, b: 2, c: 3, d: 4});
 
-  expect(array).toEqual([1, 4, 9, 16]);
+  pipe(
+    map(x => x * x),
+    jestSubscribe(expected, {a: 1, b: 4, c: 9, d: 16})
+  )(stream, scheduler);
 
-});
+  scheduler.flush();
+}));
 
 test('should forward exceptions', sandbox(scheduler => () => {
 
-  const {next, error, complete} = Record;
-  const result = [];
-  const errors = [];
-  const stream = scheduler.createHotStream(
-    next(10, 1),
-    next(20, 2),
-    error(30, 42),
-    next(40, 3),
-    next(50, 4),
-    complete(60)
-  );
+  const stream = scheduler.createHotStream('-ab#cd|', {a: 1, b: 2, c: 3, d: 4});
 
   pipe(
     map(x => x * 2),
-    subscribe(x => result.push(x), e => errors.push(e))
-  )(stream);
+    jestSubscribe('-ab#', {a: 2, b: 4})
+  )(stream, scheduler);
 
-  scheduler.advanceTo(100);
-
-  expect(result).toEqual([2, 4]);
-  expect(errors).toEqual([42]);
-
+  scheduler.flush();
 }));
 
-test('should catch user errors', () => {
+test('should catch user errors', sandbox(scheduler => () => {
 
-  const errors = [];
-  const result = [];
   const stream = Stream([1, 2, 3, 4]);
 
   pipe(
-    map(_ => {
-      throw 42;
-    }),
-    subscribe(
-      x => result.push(x),
-      e => errors.push(e)
-    )
-  )(stream);
+    map(() => { throw 42; }),
+    jestSubscribe('#')
+  )(stream, scheduler);
 
-  expect(result).toEqual([]);
-  expect(errors).toEqual([42]);
-
-});
+  scheduler.flush();
+}));

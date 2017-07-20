@@ -2,6 +2,7 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+
 'use strict';
 import {Stream} from '../src/stream/Stream';
 import subscribe from '../src/stream/operators/subscribe';
@@ -9,82 +10,59 @@ import zip from '../src/stream/operators/zip';
 import {sandbox} from "./helpers/sandbox";
 import {Record} from "../src/stream/operators/notification";
 import pipe from "../src/stream/operators/pipe";
+import {jestSubscribe} from "./helpers/testSubscribe";
 
 
-test('Can zip streams', () => {
+test('Can zip streams', sandbox(scheduler => () => {
 
-  let array = [];
+  const stream1 = scheduler.createHotStream('abcd|');
+  const stream2 = scheduler.createHotStream('efgh|');
 
-  const stream1 = Stream([1, 2, 3, 4]);
-  const stream2 = Stream([5, 6, 7, 8]);
+  pipe(
+    zip((x, y) => x + y, stream2),
+    jestSubscribe('abcd|', {a: 'ae', b: 'bf', c: 'cg', d: 'dh'})
+  )(stream1, scheduler);
 
-  subscribe(
-    x => array.push(x),
-    e => {
-      throw e
-    }
-  )(zip((x, y) => x + y, stream2)(stream1));
-
-  expect(array).toEqual([6, 8, 10, 12])
-
-});
+  scheduler.flush();
+}));
 
 test('should forward errors from primary stream', sandbox(scheduler => () => {
 
-  const {error, next} = Record;
-  const result = [];
-  const errors = [];
+  const primary = scheduler.createHotStream('--a--#');
+  const secondary = scheduler.createHotStream('-ab');
 
-  const primary = scheduler.createHotStream(next(15, 2), error(50, 42));
-  const secondary = scheduler.createHotStream(next(10, 1), next(20, 3));
+  jestSubscribe('--a--#', {a: 'aa'})(
+    zip((x, y) => x + y, secondary)(primary, scheduler),
+    scheduler
+  );
 
-  subscribe(
-    x => result.push(x),
-    e => errors.push(e)
-  )(zip((x, y) => x + y, secondary)(primary, scheduler));
-
-  scheduler.advanceTo(100);
-
-  expect(result).toEqual([3]);
-  expect(errors).toEqual([42]);
+  scheduler.flush();
 }));
 
 test('should forward errors from secondary stream', sandbox(scheduler => () => {
 
-  const {error, next} = Record;
-  const result = [];
-  const errors = [];
+  const primary = scheduler.createHotStream('--a--#');
+  const secondary = scheduler.createHotStream('-ab');
 
-  const primary = scheduler.createHotStream(next(15, 2), error(50, 42));
-  const secondary = scheduler.createHotStream(next(10, 1), next(20, 3));
+  pipe(
+    zip((x, y) => x + y, primary),
+    jestSubscribe('--a--#', {a: 'aa'})
+  )(secondary, scheduler);
 
-  subscribe(
-    x => result.push(x),
-    e => errors.push(e)
-  )(zip((x, y) => x + y, primary)(secondary, scheduler));
+  scheduler.flush();
 
-  scheduler.advanceTo(100);
-
-  expect(result).toEqual([3]);
-  expect(errors).toEqual([42]);
 }));
 
-test('should forward exceptions from selector', () => {
+test('should forward exceptions from selector', sandbox(scheduler => () => {
 
   const primary = Stream([1, 2, 3]);
   const secondary = Stream([1 ,2 ,3]);
-  const result = [];
-  const errors = [];
 
   pipe(
     zip(() => { throw 42; }, secondary),
-    subscribe(
-      x => result.push(x),
-      e => errors.push(e)
-    )
-  )(primary);
+    jestSubscribe('#')
+  )(primary, scheduler);
 
-    expect(result).toEqual([]);
-    expect(errors).toEqual([42]);
+  scheduler.flush();
 
-});
+}));
