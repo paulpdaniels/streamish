@@ -36,6 +36,7 @@ export class VirtualTimeScheduler {
     if (!this.isRunning && this.queue.length > 0) {
       this.isRunning = true;
       while (this.isRunning && this.queue.length > 0) {
+        // TODO Optimize this, this is super inefficient
         this.queue.sort(sortByDelay);
         if (this.queue[0].delay <= absoluteTime) {
           const item = this.queue.shift();
@@ -63,5 +64,4 @@ export class VirtualTimeScheduler {
       this.isRunning = false;
     }
   }
-
 }

@@ -2,18 +2,19 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+
+
 'use strict';
-import {Flow} from '../Flow';
-import {Sink} from '../Sink';
+import {ConformantFlow} from '../Flow';
+import {ProtectedSink} from '../Sink';
 import {Stream}  from '../Stream';
 import flatMap from './flatMap';
 import map from './map';
 import filter from './filter';
 import pipe from './pipe';
-import _fill from "./internal/_fill";
 
 export default function zip(fn, ...streams) {
-  return (flow, scheduler) => new ZipFlow(fn, [flow, ...streams], scheduler);
+  return (flow, scheduler) => new ConformantFlow(new ZipFlow(fn, [flow, ...streams], scheduler));
 }
 
 function withIndex(stream, i) {
@@ -22,44 +23,46 @@ function withIndex(stream, i) {
 
 const unit = {__type: 'unit'};
 
-class ZipFlow extends Flow {
+function doZip(values, hasValues, len) {
+  return ([i, value]) => {
+    const cur = (hasValues[i] += 1);
+
+    // We are in uncharted territory
+    if (cur >= values.length) {
+      values.push(new Array(len));
+    }
+
+    // Then set the current value
+    values[cur][i] = value;
+
+    if (!hasValues.some(v => v < 0)) {
+      const out = values.shift();
+      // We have one less value for each hasValue
+      for (let i = 0; i < len; ++i) {
+        hasValues[i] -= 1;
+      }
+      return out;
+    } else {
+      return unit;
+    }
+  }
+}
+
+class ZipFlow {
   constructor(fn, streams, scheduler) {
-    super(Stream(streams), scheduler);
+    this.stream = Stream(streams);
+    this.scheduler = scheduler;
     this.fn = fn;
     this.len = streams.length;
   }
 
-  _subscribe(observer) {
+  subscribe(observer) {
     const values = [];
     const { len } = this;
-    const hasValues = new Array(len);
-    _fill(hasValues, len, -1);
+    const hasValues = new Array(len).fill(-1);
     const _flow = pipe(
       flatMap(withIndex),
-      map(([i, value]) => {
-
-        // Update the index that will be updated
-        const cur = (hasValues[i] += 1);
-
-        // We are in uncharted territory
-        if (cur >= values.length) {
-          values.push(new Array(len));
-        }
-
-        // The set the current value
-        values[cur][i] = value;
-
-        if (!hasValues.some(v => v < 0)) {
-          const out = values.shift();
-          // We have one less value for each hasValue
-          for (let i = 0; i < len; ++i) {
-            hasValues[i] -= 1;
-          }
-          return out;
-        } else {
-          return unit;
-        }
-      }),
+      map(doZip(values, hasValues, len)),
       filter(x => x !== unit)
     )(this.stream);
 
@@ -67,18 +70,17 @@ class ZipFlow extends Flow {
   }
 
   static sink(fn, observer) {
-    return new ZipSink(fn, observer);
+    return new ProtectedSink(new ZipSink(fn, observer));
   }
 }
 
-class ZipSink extends Sink {
+class ZipSink {
   constructor(fn, observer) {
-    super();
     this.fn = fn;
     this.observer = observer;
   }
 
-  _next(v) {
+  next(v, outer) {
     let _r, _e;
     try {
       _r = this.fn(...v);
@@ -86,17 +88,17 @@ class ZipSink extends Sink {
       _e = e;
     }
     if (_e) {
-      this.error(_e);
+      outer.error(_e);
     } else {
       this.observer.next(_r);
     }
   }
 
-  _error(e) {
+  error(e) {
     this.observer.error(e);
   }
 
-  _complete() {
+  complete() {
     this.observer.complete();
   }
 }

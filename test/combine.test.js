@@ -28,7 +28,7 @@ test('should combine two streams with the latest output', () => {
 
 test('should forward errors from the primary stream', sandbox(scheduler => () => {
 
-  const {next, error, complete} = Record;
+  const {next, complete} = Record;
   const result = [];
   const errors = [];
 

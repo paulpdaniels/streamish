@@ -1,5 +1,6 @@
 
 import { Record } from "../../src/stream/operators/notification";
+import _identity from "../../src/stream/operators/internal/_identity";
 
 export function withMarbles(subscriber) {
   return (head, ...rest) => {
@@ -13,15 +14,28 @@ export function withMarbles(subscriber) {
   }
 }
 
-function parseMarbles(marbles, mapMarblesToObject, mapMarblesToException) {
+function parseMarbles(marbles, ...args) {
+  let [mapMarblesToObject = _identity, mapMarblesToException = () => 42, timeUnit = 10] = args;
+
+  if (typeof mapMarblesToObject !== 'function') {
+    const mapperObj = mapMarblesToObject;
+    mapMarblesToObject = item => mapperObj[item];
+  }
+
+  if (typeof mapMarblesToException !== 'function') {
+    const mapperObj = mapMarblesToException;
+    mapMarblesToException = () => mapperObj;
+  }
+
   let currentTime = 0;
   let suspended = false;
   const expected = [];
   for (let marble of marbles) {
     switch (marble) {
-      case '-':
       case ' ':
-        currentTime += 10;
+        continue;
+      case '-':
+        currentTime += timeUnit;
         break;
       case '(':
         if (suspended) throw new Error('Invalid marble can\'t have nested parenthesis');
@@ -30,22 +44,21 @@ function parseMarbles(marbles, mapMarblesToObject, mapMarblesToException) {
       case ')':
         if (!suspended) throw new Error('Unmatched \')\' detected!');
         suspended = false;
-        currentTime += 10;
+        currentTime += timeUnit;
         break;
       case '#':
-        expected.push(Record.error(currentTime, mapMarblesToException || 42));
-        !suspended && (currentTime += 10);
+        expected.push(Record.error(currentTime, mapMarblesToException()));
+        !suspended && (currentTime += timeUnit);
         break;
       case '|':
         expected.push(Record.complete(currentTime));
-        !suspended && (currentTime += 10);
+        !suspended && (currentTime += timeUnit);
         break;
       default:
         expected.push(Record.next(currentTime,
-          mapMarblesToObject && typeof mapMarblesToObject[marble] !== 'undefined' ?
-            mapMarblesToObject[marble] : marble
+          mapMarblesToObject(marble)
         ));
-        !suspended && (currentTime += 10);
+        !suspended && (currentTime += timeUnit);
     }
   }
 

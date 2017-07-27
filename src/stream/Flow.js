@@ -34,3 +34,28 @@ export class Flow {
     return this;
   }
 }
+
+export class ConformantFlow {
+  constructor(underlying) {
+    this.underlying = underlying;
+  }
+
+
+  subscribe(observer) {
+    const sub = this.underlying.subscribe(observer);
+    return sub ? ConformantFlow._conform(sub) : Subscription.empty;
+  }
+
+  static _conform(sub) {
+    if (sub && sub.unsubscribe) {
+      return sub;
+    } else {
+      return new Subscription(sub);
+    }
+  }
+
+  [symbolObservable]() {
+    return this;
+  }
+
+}

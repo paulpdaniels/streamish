@@ -1,9 +1,9 @@
 /**
  * Created by paulp on 7/4/2017.
  */
-var gulp = require('gulp');
-var sourcemaps = require("gulp-sourcemaps");
-var babel = require("gulp-babel");
+const gulp = require('gulp');
+const sourcemaps = require("gulp-sourcemaps");
+const babel = require("gulp-babel");
 
 gulp.task('default', ['build-es']);
 

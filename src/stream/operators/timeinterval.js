@@ -2,24 +2,27 @@
  * Created by paulp on 7/4/2017.
  */
 
-import { Flow } from '../Flow';
+import {ConformantFlow} from '../Flow';
+import {ProtectedSink} from "../Sink";
 
 export default function timeInterval() {
-  return (flow, scheduler) => new TimeIntervalFlow(flow, scheduler);
+  return (flow, scheduler) => new ConformantFlow(new TimeIntervalFlow(flow, scheduler));
 }
 
-class TimeIntervalFlow extends Flow {
+class TimeIntervalFlow {
   constructor(stream, scheduler) {
-    super(stream);
+    this.stream = stream;
     this.scheduler = scheduler;
   }
 
-  _subscribe(observer) {
-    return this.stream.subscribe(TimeIntervalFlow.sink(observer, this.scheduler));
+  subscribe(observer) {
+    return TimeIntervalFlow
+      .sink(observer, this.scheduler)
+      .run(this.stream);
   }
 
   static sink(observer, scheduler) {
-    return new TimeIntervalSink(observer, scheduler);
+    return new ProtectedSink(new TimeIntervalSink(observer, scheduler));
   }
 }
 
@@ -28,12 +31,6 @@ class TimeIntervalSink {
     this.observer = observer;
     this.scheduler = scheduler;
     this.current = 0;
-    this.sub = null;
-    this.isStopped = false;
-  }
-
-  run(source) {
-    return this.sub = source.subscribe(this);
   }
 
   next(v) {

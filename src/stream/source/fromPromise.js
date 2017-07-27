@@ -2,15 +2,15 @@
  * Created by paulp on 7/8/2017.
  */
 
-import { Flow } from '../Flow';
+import {ConformantFlow} from '../Flow';
 
 export default function fromPromise(p, scheduler) {
-  return new PromiseSource(p, scheduler);
+  return new ConformantFlow(new PromiseSource(p, scheduler));
 }
 
-class PromiseSource extends Flow {
+class PromiseSource {
   constructor(p, scheduler) {
-    super();
+    // TODO Support promise cancellation
     this.promise = p;
     this.scheduler = scheduler;
   }
@@ -24,7 +24,7 @@ class PromiseSource extends Flow {
     sink.error(error);
   }
 
-  _subscribe(sink) {
+  subscribe(sink) {
     this.promise.then(
       value => {
         if (this.scheduler) {

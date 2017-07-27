@@ -47,3 +47,44 @@ export class Sink {
 
   _unsubscribe() {}
 }
+
+'use strict';
+export class ProtectedSink {
+  constructor(underlying) {
+    this.underlying = underlying;
+    this.isStopped = false;
+    this.sub = null;
+  }
+
+  run(source) {
+    return this.sub || (this.sub = source.subscribe(this));
+  }
+
+  next(v) {
+    if (!this.isStopped) {
+      this.underlying.next(v, this);
+    }
+  }
+
+  complete() {
+    if (!this.isStopped) {
+      this.underlying.complete(this);
+      this.unsubscribe();
+    }
+  }
+
+  error(e) {
+    if (!this.isStopped) {
+      this.underlying.error(e, this);
+      this.unsubscribe();
+    }
+  }
+
+  unsubscribe() {
+    if (!this.isStopped) {
+      this.underlying.unsubscribe && this.underlying.unsubscribe();
+      this.sub && this.sub.unsubscribe();
+      this.isStopped = true;
+    }
+  }
+}

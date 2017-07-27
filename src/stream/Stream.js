@@ -1,9 +1,9 @@
 
 'use strict';
-import { Flow } from './Flow';
 import getObservable from "./observable/getObservable";
 import fromPromise from "./source/fromPromise";
 import fromIterable from "./source/fromIterable";
+import fromObservable from "./source/fromObservable";
 
 function isPromiseLike(source) {
   return source && typeof source.then === 'function';
@@ -16,7 +16,7 @@ function isIterable(source) {
 export function Stream(source, scheduler) {
   let obs;
   if ((obs = getObservable(source))) {
-    return new Flow(obs, scheduler);
+    return fromObservable(obs, scheduler);
   } else if (isPromiseLike(source)) {
     return fromPromise(source, scheduler);
   } else if (isIterable(source)) {

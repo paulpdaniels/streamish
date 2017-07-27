@@ -3,11 +3,13 @@
  *  @author Paul Daniels
  */
 
+
 "use strict";
 
 import {Subscription} from '../Subscription';
 import {VirtualTimeScheduler} from "./virtualTimeScheduler";
 import {withMarbles} from "../../../test/helpers/withMarbles";
+import {ConformantFlow} from "../Flow";
 
 export class TestScheduler extends VirtualTimeScheduler {
   constructor() {
@@ -15,11 +17,19 @@ export class TestScheduler extends VirtualTimeScheduler {
   }
 
   createHotStream(...notifications) {
-    return withMarbles((...input) => TestScheduler.constructStream(this, input))(...notifications);
+    return withMarbles((...input) => TestScheduler.constructHotStream(this, input))(...notifications);
   }
 
-  static constructStream(scheduler, notifications) {
-    return new HotFlow(scheduler, notifications);
+  createColdStream(...notifications) {
+    return withMarbles((...input) => TestScheduler.constructColdStream(this, input))(...notifications);
+  }
+
+  static constructHotStream(scheduler, notifications) {
+    return new ConformantFlow(new HotFlow(scheduler, notifications));
+  }
+
+  static constructColdStream(scheduler, notifications) {
+    return new ConformantFlow(new ColdFlow(scheduler, notifications));
   }
 }
 
@@ -35,5 +45,19 @@ class HotFlow {
       subscription.add(this.scheduler.schedule(n.value, n.at, value => value.into(sink)));
     }
     return subscription;
+  }
+}
+
+class ColdFlow {
+  constructor(scheduler, notifications) {
+    this.scheduler = scheduler;
+    this.notifications = notifications;
+  }
+
+  subscribe(sink) {
+    const subscription = new Subscription();
+    for (let n of this.notifications) {
+      subscription.add(this.scheduler.schedule(n.value, n.at + this.scheduler.now(), value => value.into(sink)));
+    }
   }
 }

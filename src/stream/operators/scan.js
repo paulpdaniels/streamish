@@ -2,39 +2,40 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+
 'use strict';
-import {Flow} from '../Flow';
-import {Sink} from '../Sink';
+import {ConformantFlow} from '../Flow';
+import {ProtectedSink} from '../Sink';
 
 export default function scan(fn, seed) {
-  return (flow, scheduler) => new ScanFlow(fn, seed, flow, scheduler);
+  return (flow, scheduler) => new ConformantFlow(new ScanFlow(fn, seed, flow, scheduler));
 }
 
-class ScanFlow extends Flow {
+class ScanFlow {
   constructor(fn, seed, flow, scheduler) {
-    super(flow, scheduler);
+    this.stream = flow;
+    this.scheduler = scheduler;
     this.fn = fn;
     this.seed = seed;
   }
 
-  _subscribe(observer) {
+  subscribe(observer) {
     return this.sink(observer).run(this.stream);
   }
 
   sink(observer) {
-    return new ScanSink(this.fn, this.seed, observer);
+    return new ProtectedSink(new ScanSink(this.fn, this.seed, observer));
   }
 }
 
-class ScanSink extends Sink {
+class ScanSink {
   constructor(fn, seed, observer) {
-    super();
     this.observer = observer;
     this.seed = seed;
     this.fn = fn;
   }
 
-  _next(v) {
+  next(v) {
     try {
       const r = this.fn(this.seed, v);
       this.seed = r;
@@ -44,11 +45,11 @@ class ScanSink extends Sink {
     }
   }
 
-  _error(e) {
+  error(e) {
     this.observer.error(e);
   }
 
-  _complete() {
+  complete() {
     this.observer.complete();
   }
 }

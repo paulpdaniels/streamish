@@ -5,14 +5,14 @@
 
 'use strict';
 import {Stream} from '../src/stream/Stream';
-import subscribe  from '../src/stream/operators/subscribe';
-import flatMap   from '../src/stream/operators/flatMap';
+import subscribe from '../src/stream/operators/subscribe';
+import flatMap from '../src/stream/operators/flatMap';
 import pipe from "../src/stream/operators/pipe";
 import {sandbox} from "./helpers/sandbox";
 import {Record} from "../src/stream/operators/notification";
 import {jestSubscribe} from "./helpers/testSubscribe";
 
-test('Can flatMap a stream', () => {
+test('Can flatMap a stream', sandbox(scheduler => () => {
 
   let array = [];
   const stream = Stream([3, 4]);
@@ -24,7 +24,33 @@ test('Can flatMap a stream', () => {
 
   expect(array).toEqual([6, 9, 8, 12]);
 
-});
+}));
+
+test('can flatMap an array', sandbox(scheduler => () => {
+
+  const stream = scheduler.createHotStream('--a--b');
+
+  pipe(
+    flatMap(x => [1, 2, 3]),
+    jestSubscribe('--(abc)--(abc)', {a: 1, b: 2, c: 3})
+  )(stream, scheduler);
+
+  scheduler.flush();
+
+}));
+
+test('can flatMap a promise', sandbox(scheduler => () => {
+
+  const stream = scheduler.createHotStream('--a--b');
+
+  pipe(
+    flatMap(x => Promise.resolve(1)),
+    jestSubscribe('--a--a', {a: 1})
+  )(stream, scheduler);
+
+  scheduler.flush();
+
+}));
 
 test('should halt on error', sandbox(scheduler => () => {
 
@@ -41,52 +67,28 @@ test('should halt on error', sandbox(scheduler => () => {
 
 test('should limit concurrent streams', sandbox(scheduler => () => {
 
-  const result = [];
 
-  const {next, error, complete} = Record;
+  const {next, complete} = Record;
 
-  const stream = scheduler.createHotStream(
-    next(10, 30),
-    next(20, 50),
-    next(40, 60),
-    complete(500)
-  );
-
-
+  const stream = scheduler.createHotStream('-ab-c--------------|', {a: 30, b: 50, c: 60});
 
   pipe(
-    flatMap(x => scheduler.createHotStream(next(x, x), complete(x + 1)), 1),
-    subscribe(x => result.push(x))
+    flatMap(x => scheduler.createHotStream(next(x, x), complete(x + 10)), 1),
+    jestSubscribe('----a-----b------c-|', {a: 30, b: 50, c: 60})
   )(stream, scheduler);
 
-
-  scheduler.advanceTo(500);
-
-  expect(result).toEqual([30, 50, 60]);
+  scheduler.flush();
 
 }));
 
 test('should forward exceptions from inner streams', sandbox(scheduler => () => {
-  const result = [];
-  const errors = [];
-
-  const {next, error, complete} = Record;
-
-  const stream = scheduler.createHotStream(
-    next(10, 1),
-    next(20, 2),
-    next(40, 3),
-    complete(100)
-  );
+  const stream = scheduler.createHotStream('abc-------|');
 
   pipe(
-    flatMap(x => scheduler.createHotStream(error(30, 42))),
-    subscribe(x => result.push(x), e => errors.push(e))
+    flatMap(x => scheduler.createHotStream('--#')),
+    jestSubscribe('--#')
   )(stream, scheduler);
 
-  scheduler.advanceTo(100);
-
-  expect(errors).toEqual([42]);
-  expect(result).toEqual([]);
+  scheduler.flush();
 
 }));

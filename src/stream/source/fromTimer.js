@@ -3,15 +3,14 @@
  */
 
 import {Subscription} from '../Subscription';
-import { Flow } from '../Flow';
+import {ConformantFlow, Flow} from '../Flow';
 
 export default function fromTimer(initialDelay, periodOrScheduler, scheduler) {
-  return new TimerSource(initialDelay, periodOrScheduler, scheduler);
+  return new ConformantFlow(new TimerSource(initialDelay, periodOrScheduler, scheduler));
 }
 
-class TimerSource extends Flow {
+class TimerSource {
   constructor(initialDelay, periodOrScheduler, scheduler) {
-    super();
     this.initialDelay = initialDelay;
     if (scheduler) {
       this.period = periodOrScheduler;
@@ -34,7 +33,7 @@ class TimerSource extends Flow {
     return Subscription.empty;
   }
 
-  _subscribe(observer) {
+  subscribe(observer) {
     return this.scheduler.schedule([observer, 0, this.period], this.initialDelay, TimerSource.dispatch);
   }
 }
