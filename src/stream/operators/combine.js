@@ -2,10 +2,9 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+
 "use strict";
-import {Flow} from '../Flow';
-import {Sink} from '../Sink';
-import _fill from './internal/_fill';
+import {ProtectedSink} from '../Sink';
 import pipe from './pipe';
 import streamMap from './flatMap';
 import map from './map';
@@ -20,9 +19,10 @@ function withIndex(stream, i) {
   return map(v => [i, v])(stream);
 }
 
-class CombineFlow extends Flow {
+class CombineFlow {
   constructor(fn, streams, scheduler) {
-    super(Stream(streams), scheduler);
+    this.stream = Stream(streams);
+    this.scheduler = scheduler;
     this.fn = fn;
     this.len = streams.length;
   }
@@ -36,10 +36,9 @@ class CombineFlow extends Flow {
     }
   }
 
-  _subscribe(observer) {
+  subscribe(observer) {
     const values = new Array(this.len);
-    const hasValues = new Array(this.len);
-    _fill(hasValues, this.len, false);
+    const hasValues = new Array(this.len).fill(false);
 
     const _flow = pipe(
       streamMap(withIndex),
@@ -51,18 +50,17 @@ class CombineFlow extends Flow {
   }
 
   static sink(fn, observer) {
-    return new CombineSink(fn, observer);
+    return new ProtectedSink(new CombineSink(fn, observer));
   }
 }
 
-class CombineSink extends Sink {
+class CombineSink {
   constructor(fn, observer) {
-    super();
     this.fn = fn;
     this.observer = observer;
   }
 
-  _next(v) {
+  next(v, outer) {
     let _r, _e;
     try {
       _r = this.fn.apply(null, v);
@@ -70,17 +68,17 @@ class CombineSink extends Sink {
       _e = e;
     }
     if (_e) {
-      this.error(_e);
+      outer.error(_e);
     } else {
       this.observer.next(_r);
     }
   }
 
-  _error(e) {
+  error(e) {
     this.observer.error(e);
   }
 
-  _complete() {
+  complete() {
     this.observer.complete();
   }
 }

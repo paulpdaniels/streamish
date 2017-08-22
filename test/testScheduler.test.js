@@ -2,9 +2,11 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+
 'use strict';
 
 import { TestScheduler } from '../src/stream/schedulers/testScheduler';
+import {jestSubscribe} from "./helpers/testSubscribe";
 
 
 test('should be able to construct a TestScheduler', () => {
@@ -63,5 +65,17 @@ test('should be able to execute actions in order', () => {
   scheduler.advanceTo(30);
 
   expect(actual).toEqual(expected);
+
+});
+
+test('should be able create a stream which executes on subscription', () => {
+  const scheduler = new TestScheduler();
+  const stream = scheduler.createColdStream('--a--b');
+
+  scheduler.advanceBy(30);
+
+  jestSubscribe('--a--b')(stream, scheduler);
+
+  scheduler.flush();
 
 });

@@ -37,4 +37,4 @@ test('should schedule recursively', () => {
 
   expect(result).toEqual([0, 1, 2]);
 
-})
+});

@@ -2,39 +2,43 @@
  *  Created - 6/1/2017
  *  @author Paul Daniels
  */
+
+
 'use strict';
-import { Flow } from '../Flow';
-import { Sink } from '../Sink';
+import {ConformantFlow} from '../Flow';
+import {ProtectedSink} from '../Sink';
 
 export default function timeShift(delayTime) {
-  return (f, scheduler) => new TimeShiftFlow(delayTime, f, scheduler);
+  return (f, scheduler) => new ConformantFlow(new TimeShiftFlow(f, delayTime, scheduler));
 }
 
-class TimeShiftFlow extends Flow {
-  constructor(delayTime, stream, scheduler) {
-    super(stream, scheduler);
+class TimeShiftFlow {
+  constructor(stream, delayTime, scheduler) {
+    this.scheduler = scheduler;
+    this.stream = stream;
     this.delayTime = delayTime;
   }
 
-  _subscribe(observer) {
-    return TimeShiftFlow.sink(this.delayTime, this.scheduler, observer)
+  subscribe(observer) {
+    return TimeShiftFlow
+      .sink(this.delayTime, this.scheduler, observer)
       .run(this.stream);
   }
 
   static sink(delayTime, scheduler, observer) {
-    return new TimeShiftSink(delayTime, scheduler, observer);
+    return new ProtectedSink(new TimeShiftSink(delayTime, scheduler, observer));
   }
 }
 
-class TimeShiftSink extends Sink {
+class TimeShiftSink {
   constructor(delayTime, scheduler, observer) {
-    super();
     this.delayTime = delayTime;
     this.scheduler = scheduler;
     this.observer = observer;
   }
 
-  _next(v) {
+  next(v) {
+    // TODO Add error handling
     this.scheduler.schedule(
       [this.observer, v],
       this.delayTime,
@@ -42,11 +46,11 @@ class TimeShiftSink extends Sink {
     );
   }
 
-  _error(e) {
+  error(e) {
     this.observer.error(e);
   }
 
-  _complete() {
+  complete() {
     this.scheduler.schedule(this.observer, this.delayTime,
       (state) => state.complete()
     )

@@ -13,6 +13,6 @@ export default function toPromise(promiseCtor = Promise, scheduler) {
       next(v) { value = v; },
       error(e) { reject(e); },
       complete() { resolve(value); }
-    })
+    });
   });
 }

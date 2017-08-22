@@ -2,24 +2,30 @@
  *  Created - 5/31/2017
  *  @author Paul Daniels
  */
+
+
 'use strict';
-import { Flow } from '../Flow';
-import { Sink } from '../Sink';
+import {ConformantFlow} from '../Flow';
+import {ProtectedSink, Sink} from '../Sink';
 import { Subscription } from '../Subscription';
+import {Stream} from "../Stream";
 
 export default function flatMap(fn, concurrency = Number.POSITIVE_INFINITY) {
-  return (flow, scheduler) => new FlatMapFlow(fn, concurrency, flow, scheduler);
+  return (flow, scheduler) => new ConformantFlow(new FlatMapFlow(flow, fn, concurrency, scheduler));
 }
 
-export class FlatMapFlow extends Flow {
-  constructor(fn, concurrency, flow, scheduler) {
-    super(flow, scheduler);
+export class FlatMapFlow {
+  constructor(flow, fn, concurrency, scheduler) {
+    this.stream = flow;
     this.fn = fn;
     this.concurrency = concurrency;
+    this.scheduler = scheduler;
   }
 
-  _subscribe(observer) {
-    return FlatMapFlow.sink(this.fn, this.concurrency, observer).run(this.stream);
+  subscribe(observer) {
+    return FlatMapFlow
+      .sink(this.fn, this.concurrency, observer)
+      .run(this.stream);
   }
 
   static sink(fn, concurrency, observer) {
@@ -44,6 +50,7 @@ class StreamSink extends Sink {
       this.active++;
       this._activate(v);
     } else {
+      // TODO: This is an opportunity to support bounded queue mechanics
       this.queue.push(v);
     }
   }
@@ -63,8 +70,8 @@ class StreamSink extends Sink {
   }
 
   _activate(v) {
-    const source = this.fn(v, this.index++);
-    const sub = new InnerSink(this, this.observer).run(source);
+    const source = Stream(this.fn(v, this.index++), this.scheduler);
+    const sub = new ProtectedSink(new InnerSink(StreamSink.proxy, this)).run(source);
     this.subs.add(sub);
     return sub;
   }
@@ -91,22 +98,38 @@ class StreamSink extends Sink {
   }
 }
 
-class InnerSink extends Sink {
-  constructor(parent, observer) {
-    super();
-    this.observer = observer;
-    this.parent = parent;
-  }
-
-  _next(v) {
+/**
+ * A proxy observer object that is used to mock the standard Observer interface
+ * and redirect them to the appropriate StreamSink methods
+ * @type {{next: (function(*=)), error: (function(*=)), complete: (function())}}
+ */
+StreamSink.proxy = {
+  next(v) {
     this.observer.next(v);
+  },
+  error(e) {
+    this.errorInner(e);
+  },
+  complete() {
+    this.completeInner();
+  }
+};
+
+class InnerSink {
+  constructor(proxy, context) {
+    this.proxy = proxy;
+    this.context = context;
   }
 
-  _error(e) {
-    this.parent.errorInner(e);
+  next(v) {
+    this.proxy.next.call(this.context, v);
   }
 
-  _complete() {
-    this.parent.completeInner();
+  error(e) {
+    this.proxy.error.call(this.context, e);
+  }
+
+  complete() {
+    this.proxy.complete.call(this.context);
   }
 }

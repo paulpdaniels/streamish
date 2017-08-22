@@ -2,50 +2,52 @@
  *  Created - 5/31/2017
  *  @author Paul Daniels
  */
+
+
 'use strict';
-import { Flow } from '../Flow';
-import { Sink } from '../Sink';
+import {ConformantFlow} from '../Flow';
+import {ProtectedSink} from '../Sink';
 
 export default function filter(fn) {
-  return (flow, scheduler) => new FilterFlow(fn, flow, scheduler);
+  return (flow, scheduler) => new ConformantFlow(new FilterFlow(flow, fn, scheduler));
 }
 
-class FilterFlow extends Flow {
-  constructor(fn, flow, scheduler) {
-    super(flow, scheduler);
+class FilterFlow {
+  constructor(flow, fn, scheduler) {
+    this.stream = flow;
+    this.scheduler = scheduler;
     this.fn = fn;
   }
 
-  _subscribe(observer) {
+  subscribe(observer) {
     return FilterFlow.sink(this.fn, observer).run(this.stream);
   }
 
   static sink(fn, observer) {
-    return new FilterSink(fn, observer);
+    return new ProtectedSink(new FilterSink(fn, observer));
   }
 }
 
-class FilterSink extends Sink {
+class FilterSink {
   constructor(fn, observer) {
-    super();
     this.fn = fn;
     this.observer = observer;
   }
 
-  _next(v) {
+  next(v, outer) {
     let _p, _e;
     try { _p = this.fn(v); } catch (e) { _e = e; }
     if (_e) {
-      this.error(_e);
+      outer.error(_e);
     } else {
       _p && this.observer.next(v);
     }
   }
 
-  _error(e) {
+  error(e) {
     this.observer.error(e);
   }
-  _complete() {
+  complete() {
     this.observer.complete();
   }
 }

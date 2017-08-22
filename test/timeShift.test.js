@@ -11,11 +11,11 @@ import {jestSubscribe} from "./helpers/testSubscribe";
 
 test('should delay emission of events', sandbox(scheduler => () => {
 
-  const source = scheduler.createHotStream('--a-b--c');
+  const source = scheduler.createHotStream('--a-b--c|');
 
   pipe(
     timeShift(10),
-    jestSubscribe('---a-b--c')
+    jestSubscribe('---a-b--c|')
   )(source, scheduler);
 
   scheduler.flush();

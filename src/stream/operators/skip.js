@@ -2,49 +2,52 @@
  *  Created - 6/2/2017
  *  @author Paul Daniels
  */
+
+
 "use strict";
 
-import { Flow } from '../Flow';
-import { Sink } from '../Sink';
+import {ConformantFlow} from '../Flow';
+import {ProtectedSink} from '../Sink';
 
 export default function skip(n) {
-  return f => new SkipFlow(n, f);
+  return flow => new ConformantFlow(new SkipFlow(flow, n));
 }
 
-class SkipFlow extends Flow {
-  constructor(n, stream) {
-    super(stream);
+class SkipFlow {
+  constructor(stream, n) {
+    this.stream = stream;
     this.n = n;
   }
 
-  _subscribe(observer) {
-    return SkipFlow.sink(this.n, observer).run(this.stream);
+  subscribe(observer) {
+    return SkipFlow
+      .sink(this.n, observer)
+      .run(this.stream);
   }
 
   static sink(n, observer) {
-    return new SkipSink(n, observer);
+    return new ProtectedSink(new SkipSink(n, observer));
   }
 }
 
-class SkipSink extends Sink {
+class SkipSink {
   constructor(n, observer) {
-    super();
     this.n = n;
     this.observer = observer;
   }
 
-  _next(v) {
+  next(v) {
     this.n--;
     if (this.n < 0) {
       this.observer.next(v);
     }
   }
 
-  _error(e) {
+  error(e) {
     this.observer.error(e);
   }
 
-  _complete() {
+  complete() {
     this.observer.complete();
   }
 }

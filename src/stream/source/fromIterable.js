@@ -2,16 +2,15 @@
  * Created by paulp on 7/12/2017.
  */
 
-import {Flow} from '../Flow';
+import {ConformantFlow, Flow} from '../Flow';
 import {Subscription} from '../Subscription';
 
 export default function fromIterable(obj, scheduler) {
-  return new IterableSource(obj, scheduler);
+  return new ConformantFlow(new IterableSource(obj, scheduler));
 }
 
-class IterableSource extends Flow {
+class IterableSource {
   constructor(source, scheduler) {
-    super();
     this.scheduler = scheduler;
     this.iterable = source;
   }
@@ -31,7 +30,7 @@ class IterableSource extends Flow {
     }
   }
 
-  _subscribe(sink) {
+  subscribe(sink) {
     const {iterable} = this;
     if (this.scheduler) {
       // Need recursive scheduling

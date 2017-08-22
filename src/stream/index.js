@@ -8,6 +8,7 @@ import { Sink } from './Sink';
 import { Subscription } from './Subscription';
 
 // Operators
+import buffer from './operators/buffer';
 import combine from './operators/combine';
 import concat from './operators/concat';
 import debounce from './operators/debounce';
@@ -37,6 +38,7 @@ export {
   Stream,
   Sink,
   Subscription,
+  buffer,
   combine,
   concat,
   debounce,

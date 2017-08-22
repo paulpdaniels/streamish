@@ -41,3 +41,16 @@ test('should throw on invalid marbles', () => {
   expect(() => withMarbles(() => {})(')')).toThrow();
 
 });
+
+test('should use custom exceptions', () => {
+
+  const subscriber = jest.fn();
+  const e = new Error(100);
+
+  withMarbles(subscriber)('--#', null, e);
+
+  expect(subscriber).toBeCalledWith(
+    error(20, e)
+  );
+
+});

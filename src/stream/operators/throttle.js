@@ -2,33 +2,34 @@
  * Created by paulp on 7/4/2017.
  */
 
-import {Flow} from "../Flow";
-import {Sink} from "../Sink";
+import {ConformantFlow} from "../Flow";
+import {ProtectedSink} from "../Sink";
+
 export default function throttle(timeSpan) {
-  return (flow, scheduler) => new ThrottleFlow(flow, timeSpan, scheduler);
+  return (flow, scheduler) => new ConformantFlow(new ThrottleFlow(flow, timeSpan, scheduler));
 }
 
-class ThrottleFlow extends Flow {
+class ThrottleFlow {
   constructor(stream, timeSpan, scheduler) {
-    super(stream);
+    this.stream = stream;
     this.timeSpan = timeSpan;
     this.scheduler = scheduler;
   }
 
-  _subscribe(observer) {
-    return ThrottleSink.sink(this.stream, observer, this.timeSpan, this.scheduler);
+  subscribe(observer) {
+    return ThrottleSink
+      .sink(observer, this.timeSpan, this.scheduler)
+      .run(this.stream);
   }
 
-  static sink(source, observer, timeSpan, scheduler) {
-    return new ThrottleSink(observer, timeSpan, scheduler)
-      .run(source);
+  static sink(observer, timeSpan, scheduler) {
+    return new ProtectedSink(new ThrottleSink(observer, timeSpan, scheduler));
   }
 }
 
 
-class ThrottleSink extends Sink {
+class ThrottleSink {
   constructor(observer, timeSpan, scheduler) {
-    super();
     this.observer = observer;
     this.timeSpan = timeSpan;
     this.scheduler = scheduler;
@@ -36,11 +37,7 @@ class ThrottleSink extends Sink {
     this.lastEmission = -1;
   }
 
-  run(source) {
-    return this.sub = source.subscribe(this);
-  }
-
-  _next(v) {
+  next(v) {
     const now = this.scheduler.now();
     if (this.lastEmission < 0 || now - this.lastEmission >= this.timeSpan) {
       this.lastEmission = now;
@@ -48,15 +45,11 @@ class ThrottleSink extends Sink {
     }
   }
 
-  _error(e) {
+  error(e) {
     this.observer.error(e);
   }
 
-  _complete() {
+  complete() {
     this.observer.complete();
-  }
-
-  unsubscribe() {
-    this.sub && this.sub.unsubscribe();
   }
 }

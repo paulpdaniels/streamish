@@ -5,7 +5,8 @@
 import { FlatMapFlow } from './flatMap';
 import _identity from './internal/_identity';
 import {Stream} from "../Stream";
+import {ConformantFlow} from "../Flow";
 
 export default function concat(...others) {
-  return (flow, scheduler) => new FlatMapFlow(_identity, 1, Stream([flow, ...others]), scheduler);
+  return (flow, scheduler) => new ConformantFlow(new FlatMapFlow(Stream([flow, ...others]), _identity, 1, scheduler));
 }

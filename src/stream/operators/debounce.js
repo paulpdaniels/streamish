@@ -2,33 +2,33 @@
  * Created by paulp on 7/4/2017.
  */
 
-import {Flow} from '../Flow';
-import {Sink} from '../Sink';
+import {ConformantFlow} from '../Flow';
+import {ProtectedSink} from '../Sink';
 
 export default function debounce(delay) {
-  return (flow, scheduler) => new DebounceFlow(flow, delay, scheduler);
+  return (flow, scheduler) => new ConformantFlow(new DebounceFlow(flow, delay, scheduler));
 }
 
-class DebounceFlow extends Flow {
+class DebounceFlow {
   constructor(flow, delay, scheduler) {
-    super(flow);
+    this.stream = flow;
     this.delay = delay;
     this.scheduler = scheduler;
   }
 
-  _subscribe(observer) {
-    return DebounceFlow.sink(observer, this.delay, this.scheduler)
+  subscribe(observer) {
+    return DebounceFlow
+      .sink(observer, this.delay, this.scheduler)
       .run(this.stream);
   }
 
   static sink(observer, delay, scheduler) {
-    return new DebounceSink(observer, delay, scheduler);
+    return new ProtectedSink(new DebounceSink(observer, delay, scheduler));
   }
 }
 
-class DebounceSink extends Sink {
+class DebounceSink {
   constructor(observer, delay, scheduler) {
-    super();
     this.observer = observer;
     this.delay = delay;
     this.scheduler = scheduler;
@@ -40,20 +40,20 @@ class DebounceSink extends Sink {
     observer.next(value);
   }
 
-  _next(v) {
+  next(v) {
     this.debouncer && this.debouncer.unsubscribe();
     this.debouncer = this.scheduler.schedule([this.observer, v], this.delay, DebounceSink.action)
   }
 
-  _error(e) {
+  error(e) {
     this.observer.error(e);
   }
 
-  _complete() {
+  complete() {
     this.observer.complete();
   }
 
-  _unsubscribe() {
+  unsubscribe() {
     this.debouncer && this.debouncer.unsubscribe();
   }
 }
